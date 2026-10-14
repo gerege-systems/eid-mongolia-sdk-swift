@@ -38,8 +38,10 @@ enum PadesSignature {
     /// Writes an invisible approval signature revision after `base`: /Sig dictionary with a zeroed placeholder,
     /// field + widget (added to the first page's /Annots), new Catalog + AcroForm (/SigFlags 3). `signerName`
     /// → /Name, `reason` (on behalf of an organisation: «<org>-ийг төлөөлж») → /Reason; both optional.
+    /// `visible` (APPEARANCE_SPEC.md): the widget gets a /Rect on `visible.page`, /F 4 and an /AP /N form XObject
+    /// (+ 2 fonts) and joins that page's /Annots; /Name must be written (else `Appearance.Failure`).
     static func prepare(_ base: [UInt8], signingTime: Date, timeZone: TimeZone,
-                        signerName: String = "", reason: String = "") throws -> Prepared {
+                        signerName: String = "", reason: String = "", visible: Appearance.Visible? = nil) throws -> Prepared {
         let inc = try PdfIncremental(base)
         let r = inc.reader
         let root = inc.root
@@ -58,6 +60,8 @@ enum PadesSignature {
         let fieldName = "Signature \(k)"
 
         let sigID = inc.reserve(), fieldID = inc.reserve(), catID = inc.reserve()
+        // Visible: form, F1 ×5, F2 ×5.
+        let apIDs = visible == nil ? [] : (0..<11).map { _ in inc.reserve() }
 
         // ── /Sig dictionary (placeholder) ──
         var sig = "<<\n /Type /Sig\n /Filter /Adobe.PPKLite\n /SubFilter /\(subFilter)\n /ByteRange "
@@ -67,17 +71,34 @@ enum PadesSignature {
         let contentsAt = sig.utf8.count - 1
         sig += String(repeating: "0", count: 2 * placeholderBytes)
         sig += ">\n /M " + pdfDate(signingTime, timeZone)
-        if let n = text(signerName, maxUnits: 120) { sig += "\n /Name " + n }
+        let nameHex = text(signerName, maxUnits: 120)
+        if let n = nameHex { sig += "\n /Name " + n }
         if let t = text(reason, maxUnits: reasonMaxUnits) { sig += "\n /Reason " + t }
         sig += "\n>>"
         let sigStart = inc.writeObject(sigID, Array(sig.utf8))
 
-        // ── field + invisible widget ──
-        var fld = "<<\n  /Type /Annot\n  /Subtype /Widget\n  /Rect [0 0 0 0]\n"
-        let page = try firstPage(r, root["Pages"], depth: 0)
-        if let page { fld += "  /P \(page.ref.id) \(page.ref.gen) R\n" }
-        fld += "  /F 132\n  /FT /Sig\n  /T (\(fieldName))\n  /V \(sigID) 0 R\n>>"
-        inc.writeObject(fieldID, Array(fld.utf8))
+        // ── field + widget ──
+        let page: Page?
+        if let vis = visible {
+            guard nameHex != nil, signerName.trimmingCharacters(in: .whitespacesAndNewlines) == vis.name else {
+                throw Appearance.Failure("/Name would not be written")
+            }
+            guard let p = try Appearance.nthPage(r, root["Pages"], vis.page) else { throw Appearance.Failure("page \(vis.page) missing") }
+            let (box, rot) = try Appearance.geometry(r, p.dict)
+            let rect = try Appearance.rect(box: box, rot: rot, x: vis.x, y: vis.y, w: vis.w, h: vis.h)
+            let bodies = try Appearance.objects(Appearance.Params(w: vis.w, h: vis.h, rotate: rot, name: vis.name, role: vis.role,
+                                                                  lang: vis.lang, date: vis.date, url: vis.url), ids: apIDs)
+            inc.writeObject(fieldID, Appearance.widget(fieldName: fieldName, rect: rect, page: p.ref, sigID: sigID, formID: apIDs[0]))
+            for (i, b) in bodies.enumerated() { inc.writeObject(apIDs[i], b) }
+            page = p
+        } else {
+            // Invisible (digitorus createVisualSignature): first page.
+            var fld = "<<\n  /Type /Annot\n  /Subtype /Widget\n  /Rect [0 0 0 0]\n"
+            page = try firstPage(r, root["Pages"], depth: 0)
+            if let page { fld += "  /P \(page.ref.id) \(page.ref.gen) R\n" }
+            fld += "  /F 132\n  /FT /Sig\n  /T (\(fieldName))\n  /V \(sigID) 0 R\n>>"
+            inc.writeObject(fieldID, Array(fld.utf8))
+        }
         if let page { try addWidget(inc, page: page, widget: fieldID) }
 
         // ── new Catalog ──

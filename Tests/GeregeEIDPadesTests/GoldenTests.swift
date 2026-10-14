@@ -17,7 +17,16 @@ final class GoldenTests: XCTestCase {
     }
 
     struct Case: Decodable {
+        struct Appearance: Decodable {
+            var page: Int?
+            var x: Double
+            var y: Double
+            var width: Double
+            var height: Double
+            var lang: String?
+        }
         struct Prep: Decodable {
+            var appearance: Appearance?
             var docId: String?
             var verifyPage: Bool?
             var fileName: String?
@@ -118,7 +127,10 @@ final class GoldenTests: XCTestCase {
             let o = EidPades.PrepareOptions(
                 signerCert: citizen, chain: chain, reason: c.prepare.reason, claimedRole: c.prepare.claimedRole,
                 signingTime: m.signingTime, docId: c.prepare.docId, verifyPage: c.prepare.verifyPage ?? false,
-                fileName: c.prepare.fileName, lang: c.prepare.lang)
+                fileName: c.prepare.fileName, lang: c.prepare.lang,
+                appearance: c.prepare.appearance.map {
+                    EidPades.SignatureAppearance(page: $0.page ?? 0, x: $0.x, y: $0.y, width: $0.width, height: $0.height, lang: $0.lang)
+                })
             let p: EidPades.Prepared
             do {
                 p = try EidPades.prepare(pdf: input, options: o)
@@ -156,6 +168,9 @@ final class GoldenTests: XCTestCase {
                 XCTAssertEqual(done.revIndex, c.expect.revIndex, c.name)
                 XCTAssertEqual(done.sigRevSha256, c.expect.sigRevSha256, "\(c.name) sigRev")
                 XCTAssertEqual(done.priorCmsSha256, c.expect.priorCmsSha256 ?? [], "\(c.name) priorCms")
+                // Prior signature's revision = that signature's own sigRevSha256 (CA mode A `sig_rev_sha256`).
+                let prev = c.input.hasPrefix("case:") ? m.cases.first { $0.name == String(c.input.dropFirst(5)) } : nil
+                XCTAssertEqual(done.priorRevisionSha256, prev.flatMap { $0.expect.sigRevSha256 }.map { [$0] } ?? [], "\(c.name) priorRevision")
                 XCTAssertEqual(done.signerCert, citizen, c.name)
                 outputs[c.name] = done.pdf
                 full += 1
@@ -163,7 +178,8 @@ final class GoldenTests: XCTestCase {
                 XCTAssertEqual(e.code.rawValue, c.expect.error, "\(c.name): \(e.message)")
             }
         }
-        print("golden: \(full) full prepare+complete byte-identical; skipped: \(skipped)")
+        print("golden: \(full) full prepare+complete byte-identical (visible: \(m.cases.filter { $0.prepare.appearance != nil }.count)); skipped: \(skipped)")
+        XCTAssertGreaterThanOrEqual(m.cases.filter { $0.prepare.appearance != nil }.count, 5)
         XCTAssertEqual(full, m.cases.filter { $0.expect.error == nil }.count, "every non-error case must complete byte-identically")
         XCTAssertTrue(skipped.isEmpty)
     }

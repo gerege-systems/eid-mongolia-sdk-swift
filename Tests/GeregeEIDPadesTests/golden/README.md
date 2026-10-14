@@ -20,6 +20,14 @@ reference-тэй **ижил байт** гаргаж байгааг шалган�
 - `input/` — CA-ийн Quartz PDF 1.3 (`quartz-pdf13.pdf`), qpdf `--object-streams=generate` ба `--linearize` хувилбар,
   `encrypted.pdf` (AES-256), CA-ийн хуучин stamp (`stamped.pdf` → `PDF_FOREIGN_SIGNATURE`), desktop-ийн objstm.
   `quartz-pdf13-second` — эхний гаралтын DSS revision дээр 2 дахь гарын үсэг (docID хуудаснаас, onBehalfOf).
+- **v3** (`pades-golden-v3`): v2-ийн бүх тохиолдол байт-ижил + харагдах гарын үсэг (APPEARANCE_SPEC.md):
+  `quartz-pdf13-visible` (mn, эхний гарын үсэг оролтын сүүлийн хуудсан дээр), `quartz-pdf13-visible-en`,
+  `quartz-pdf13-visible-second` (2 хуудастай баримтын 1-р хуудсан дээр 2 дахь, onBehalfOf — үүргийн мөртэй),
+  `quartz-pdf13-visible-twice` (харагдах эхнийх дээр харагдах 2 дахь, en), `quartz-rotated90-visible` (`/Rotate 90`,
+  `input/quartz-rotated90.pdf` = `qpdf --rotate=+90:1 --deterministic-id quartz-pdf13.pdf`). `prepare.appearance` —
+  options-д. Шинэ тохиолдлын TSA хариу `http/17…21`; хуучин fixture-ийн нэр/байт хэвээр (`-update` нь байгаа түлхүүрийг
+  дахин тоглуулна — OCSP `producedAt` цагаас хамаардаг тул).
+- `ci/pyhanko_check.py` — гаралт бүрийг pyHanko-оор (CI job `golden-external`, qpdf `--check`-тэй хамт) шалгана.
 - `desktop/` — eid-desktop-ийн Swift port-ын хуучин (CA профайл, xref FlateDecode) гаралт; Go core-ийг xref stream-ийн
   өгөгдлийг задалж тулгана (`pades/internal/core/desktop_golden_test.go`).
 

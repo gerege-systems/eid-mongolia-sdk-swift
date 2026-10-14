@@ -67,16 +67,19 @@ enum Prechecks {
     }
 
     /// CMS DER (first ASN.1 element of the hex /Contents) of every signature except the one at `excluding`,
-    /// in object-number order (Go `validate.Extract` → `CMSSHA256`).
-    static func priorCMS(_ doc: [UInt8], excluding br: [Int]) -> [[UInt8]] {
+    /// in object-number order (Go `validate.Extract` → `CMSSHA256`), with its revision end
+    /// (ByteRange[2]+ByteRange[3] — Go `PriorRevisionSHA256` = sha256(doc[0:end])).
+    static func priorSignatures(_ doc: [UInt8], excluding br: [Int]) -> [(cms: [UInt8], end: Int)] {
         guard let r = try? PdfReader(doc) else { return [] }
-        var out: [[UInt8]] = []
+        var out: [(cms: [UInt8], end: Int)] = []
         for d in signatureDicts(r) {
             if let t = (try? r.resolve(d["Type"]))?.nameValue, t != "Sig" { continue }
             guard let arr = (try? r.resolve(d["ByteRange"]))?.array else { continue }
             let got = arr.compactMap { (try? r.resolve($0))?.intValue }.map(Int.init)
             if got == br { continue }
-            if let der = PriorSignature.contentsDER(doc, got) { out.append(der) }
+            if let der = PriorSignature.contentsDER(doc, got), got.count == 4, got[2] + got[3] <= doc.count {
+                out.append((der, got[2] + got[3]))
+            }
         }
         return out
     }

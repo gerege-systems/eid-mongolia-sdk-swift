@@ -117,10 +117,15 @@ enum VerifyPage {
             if id == 3 {
                 str = "(" + VerifyPage.literal(s) + ")"
             } else {
-                str = "<" + gids(id, s).map { String(format: "%04X", UInt32($0)) }.joined() + ">"
+                str = glyphHex(id, s)
             }
             op("\(color) rg")
             op("BT /F\(id) \(size) Tf \(x) \(y) Td \(str) Tj ET")
+        }
+
+        /// F1/F2 text as `<GGGG…>` (PAGE_SPEC §2).
+        func glyphHex(_ id: Int, _ s: String) -> String {
+            "<" + gids(id, s).map { String(format: "%04X", UInt32($0)) }.joined() + ">"
         }
 
         func link(_ id: Int, _ size: Int, _ x: Int, _ y: Int, _ s: String) {
@@ -135,7 +140,11 @@ enum VerifyPage {
 
         /// PAGE_SPEC §4.
         func wrap(_ id: Int, _ size: Int, _ s: String, maxW: Int, maxLines: Int) -> [String] {
-            let limit = maxW * 1000
+            wrapLimit(id, size, s, limit: maxW * 1000, maxLines: maxLines)
+        }
+
+        /// wrap with the width limit in 1/1000 pt (visible appearance: 1/100 pt × 10).
+        func wrapLimit(_ id: Int, _ size: Int, _ s: String, limit: Int, maxLines: Int) -> [String] {
             func fits(_ t: String) -> Bool { width1000(id, size, t) <= limit }
             var lines: [String] = []
             var cur = ""
@@ -303,12 +312,19 @@ enum VerifyPage {
     }
 
     static func writeFont(_ inc: PdfIncremental, _ ids: [Int], _ f: Font) {
-        inc.writeObject(ids[0], Array("<< /Type /Font /Subtype /Type0 /BaseFont /\(f.psName) /Encoding /Identity-H /DescendantFonts [\(ids[1]) 0 R] /ToUnicode \(ids[4]) 0 R >>".utf8))
+        for (i, body) in fontBodies(ids, f).enumerated() { inc.writeObject(ids[i], body) }
+    }
+
+    /// The 5 font object bodies (in `ids` order) — shared by the verify page and the visible appearance.
+    static func fontBodies(_ ids: [Int], _ f: Font) -> [[UInt8]] {
         let wa = f.widths.map(String.init).joined(separator: " ")
-        inc.writeObject(ids[1], Array("<< /Type /Font /Subtype /CIDFontType2 /BaseFont /\(f.psName) /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor \(ids[2]) 0 R /CIDToGIDMap /Identity /W [0 [\(wa)]] >>".utf8))
-        inc.writeObject(ids[2], Array("<< /Type /FontDescriptor /FontName /\(f.psName) /Flags 32 /FontBBox [\(f.bbox[0]) \(f.bbox[1]) \(f.bbox[2]) \(f.bbox[3])] /ItalicAngle 0 /Ascent \(f.ascent) /Descent \(f.descent) /CapHeight \(f.capHeight) /StemV 80 /FontFile2 \(ids[3]) 0 R >>".utf8))
-        inc.writeObject(ids[3], streamObj(" /Length1 \(f.length1) /Filter /FlateDecode", f.stream))
-        inc.writeObject(ids[4], streamObj("", Array(toUnicode(f).utf8)))
+        return [
+            Array("<< /Type /Font /Subtype /Type0 /BaseFont /\(f.psName) /Encoding /Identity-H /DescendantFonts [\(ids[1]) 0 R] /ToUnicode \(ids[4]) 0 R >>".utf8),
+            Array("<< /Type /Font /Subtype /CIDFontType2 /BaseFont /\(f.psName) /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor \(ids[2]) 0 R /CIDToGIDMap /Identity /W [0 [\(wa)]] >>".utf8),
+            Array("<< /Type /FontDescriptor /FontName /\(f.psName) /Flags 32 /FontBBox [\(f.bbox[0]) \(f.bbox[1]) \(f.bbox[2]) \(f.bbox[3])] /ItalicAngle 0 /Ascent \(f.ascent) /Descent \(f.descent) /CapHeight \(f.capHeight) /StemV 80 /FontFile2 \(ids[3]) 0 R >>".utf8),
+            streamObj(" /Length1 \(f.length1) /Filter /FlateDecode", f.stream),
+            streamObj("", Array(toUnicode(f).utf8)),
+        ]
     }
 
     static func toUnicode(_ f: Font) -> String {

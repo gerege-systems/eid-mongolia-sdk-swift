@@ -45,10 +45,13 @@ public enum EidPades {
         public var fileName: String?
         /// Verification page language "mn" (default) | "en".
         public var lang: String?
+        /// Visible signature (APPEARANCE_SPEC.md); nil → invisible (default, byte-identical to before).
+        public var appearance: SignatureAppearance?
 
         public init(signerCert: Data, chain: [Data]? = nil, signerName: String? = nil, reason: String? = nil,
                     claimedRole: String? = nil, signingTime: Date? = nil, docId: String? = nil,
-                    verifyPage: Bool = false, fileName: String? = nil, lang: String? = nil) {
+                    verifyPage: Bool = false, fileName: String? = nil, lang: String? = nil,
+                    appearance: SignatureAppearance? = nil) {
             self.signerCert = signerCert
             self.chain = chain
             self.signerName = signerName
@@ -58,6 +61,30 @@ public enum EidPades {
             self.docId = docId
             self.verifyPage = verifyPage
             self.fileName = fileName
+            self.lang = lang
+            self.appearance = appearance
+        }
+    }
+
+    /// Visible signature placement (Go `pades.Appearance`, APPEARANCE_SPEC.md §1). Points, from the bottom-left corner
+    /// of the page's CropBox (else MediaBox) as DISPLAYED (after /Rotate); x to the right, y up; rounded to 0.01 pt.
+    /// Height ≥ 45 pt (QR), else REQUEST_INVALID.
+    public struct SignatureAppearance: Sendable, Equatable {
+        /// Input document page, 1-based; 0 = the input's last page (this prepare's verify page is not counted).
+        public var page: Int
+        public var x: Double
+        public var y: Double
+        public var width: Double
+        public var height: Double
+        /// "mn" | "en"; nil → PrepareOptions.lang (nil → mn).
+        public var lang: String?
+
+        public init(page: Int = 0, x: Double, y: Double, width: Double, height: Double, lang: String? = nil) {
+            self.page = page
+            self.x = x
+            self.y = y
+            self.width = width
+            self.height = height
             self.lang = lang
         }
     }
@@ -112,6 +139,9 @@ public enum EidPades {
         public let sigRevSha256: String
         /// SHA-256 of each prior signature's CMS DER, in document order.
         public let priorCmsSha256: [String]
+        /// SHA-256 of each prior signature's revision (`doc[0 : ByteRange[2]+ByteRange[3]]`), same order as
+        /// `priorCmsSha256` — how the CA identifies a prior CA-assembled (mode A) row (`priorRevisionSha256`).
+        public let priorRevisionSha256: [String]
         /// Citizen SIGN certificate (DER).
         public let signerCert: Data
     }
@@ -135,6 +165,7 @@ public enum EidPades {
         if let l = o.lang, !l.isEmpty, l != "mn", l != "en" {
             throw EidPadesError(code: .requestInvalid, message: "lang: mn | en")
         }
+        try checkAppearance(o)
         let now = o.signingTime ?? Date()
         let inHex = Crypto.hex(Crypto.sha256(doc))
 
@@ -167,10 +198,13 @@ public enum EidPades {
         }
         var name = o.signerName ?? ""
         if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { name = CMS.signerDisplayName(cert) }
+        let visible = try o.appearance.map { try visibleSpec(doc, $0, o, name: name, now: now, docID: docID, revIndex: revIndex) }
         let prep: PadesSignature.Prepared
         do {
             prep = try PadesSignature.prepare(base, signingTime: now, timeZone: signingTimeZone, signerName: name,
-                                              reason: o.reason ?? "")
+                                              reason: o.reason ?? "", visible: visible)
+        } catch let e as Appearance.Failure {
+            throw EidPadesError(code: .requestInvalid, message: "appearance: \(e)")
         } catch {
             throw EidPadesError(code: .pdfInvalid, message: "could not write the signature revision: \(error)")
         }
@@ -252,14 +286,55 @@ public enum EidPades {
             throw EidPadesError(code: .selfValidationFailed, message: "DSS revision: \(error)")
         }
         guard out.count <= maxOutputBytes else { throw EidPadesError(code: .pdfTooLarge, message: "output exceeds 10 MiB") }
+        let prior = Prechecks.priorSignatures(signed, excluding: st.byteRange)
         return Completed(pdf: Data(out), cms: Data(cms), docId: st.docId, outSha256: Crypto.hex(Crypto.sha256(out)),
                          inSha256: st.inSha256, hasPage: st.hasPage, pageSha256: st.pageSha256, revIndex: st.revIndex,
                          sigRevSha256: Crypto.hex(Crypto.sha256(signed)),
-                         priorCmsSha256: Prechecks.priorCMS(signed, excluding: st.byteRange).map { Crypto.hex(Crypto.sha256($0)) },
+                         priorCmsSha256: prior.map { Crypto.hex(Crypto.sha256($0.cms)) },
+                         priorRevisionSha256: prior.map { Crypto.hex(Crypto.sha256(Array(signed[0..<$0.end]))) },
                          signerCert: Data(cert.raw))
     }
 
     // MARK: - Helpers
+
+    /// Appearance checks that do not need the PDF (Go `checkAppearance`, APPEARANCE_SPEC.md §1).
+    static func checkAppearance(_ o: PrepareOptions) throws {
+        guard let a = o.appearance else { return }
+        func bad(_ m: String) -> EidPadesError { EidPadesError(code: .requestInvalid, message: "appearance: " + m) }
+        for v in [a.x, a.y, a.width, a.height] where !v.isFinite || v < 0 || v > 14400 {
+            throw bad("x, y, width, height must be 0…14400 pt")
+        }
+        guard a.page >= 0 else { throw bad("page ≥ 0") }
+        if let l = a.lang, !l.isEmpty, l != "mn", l != "en" { throw bad("lang: mn | en") }
+        if let role = o.claimedRole,
+           role.unicodeScalars.contains(where: { [.control, .format].contains($0.properties.generalCategory) }) {
+            throw bad("claimedRole contains control characters")
+        }
+    }
+
+    /// Go `visibleSpec`: page (0 → the input's last), h100, language, +08 date, verify URL.
+    static func visibleSpec(_ doc: [UInt8], _ a: SignatureAppearance, _ o: PrepareOptions, name: String, now: Date,
+                            docID: String, revIndex: Int) throws -> Appearance.Visible {
+        guard !docID.isEmpty else {
+            throw EidPadesError(code: .requestInvalid, message: "appearance: docId required (the document has no verify page)")
+        }
+        let n: Int
+        do { n = try Appearance.pageCount(doc) } catch {
+            throw EidPadesError(code: .pdfInvalid, message: "PDF: \(error)")
+        }
+        let page = a.page == 0 ? n : a.page
+        guard page <= n else { throw EidPadesError(code: .requestInvalid, message: "appearance: page \(page) > page count \(n)") }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(secondsFromGMT: 8 * 3600)
+        f.dateFormat = "yyyy-MM-dd HH:mm"
+        return Appearance.Visible(
+            page: page, x: Appearance.round100(a.x), y: Appearance.round100(a.y),
+            w: Appearance.round100(a.width), h: Appearance.round100(a.height),
+            name: name.trimmingCharacters(in: .whitespacesAndNewlines), role: o.claimedRole ?? "",
+            lang: a.lang?.nilIfEmpty ?? o.lang?.nilIfEmpty ?? "mn",
+            date: f.string(from: now) + " (+08)", url: Prechecks.verifyURLPrefix + docID + "/" + String(revIndex))
+    }
 
     static func parseRoots(_ ders: [Data]?) throws -> [X509Cert] {
         guard let ders, !ders.isEmpty else { return [EidChain.nationalRoot] }

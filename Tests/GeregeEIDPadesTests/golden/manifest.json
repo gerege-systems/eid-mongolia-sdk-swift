@@ -12,6 +12,7 @@
     "POST http://ocsp.pki.test/03 368c2ac3ced09cd6": "http/04-b1017f0fc873.der",
     "POST http://ocsp.pki.test/04 3d432940c5514c0a": "http/05-f4fae8087a68.der",
     "POST http://ocsp.pki.test/04 5167f83c7d8126d9": "http/06-b4ccb5877c32.der",
+    "POST http://tsa.pki.test/ 0dc8ca4957b79ce6": "http/17-7e33f76f0433.der",
     "POST http://tsa.pki.test/ 466c567599f24e6e": "http/07-1369ee615430.der",
     "POST http://tsa.pki.test/ 57f5397b454045bd": "http/08-40c7edd94f13.der",
     "POST http://tsa.pki.test/ 6b8e51d6f594ee9c": "http/09-e556daafa098.der",
@@ -20,7 +21,11 @@
     "POST http://tsa.pki.test/ 9e12fb25b82dc264": "http/12-8fc107a5b268.der",
     "POST http://tsa.pki.test/ a07f55fd73d7511f": "http/13-97e324e0fbe0.der",
     "POST http://tsa.pki.test/ a41b73417a686b11": "http/14-559a8f2a540d.der",
+    "POST http://tsa.pki.test/ acdec6b46401e83b": "http/18-cd7763c98dd0.der",
     "POST http://tsa.pki.test/ af79cd1447a8acb8": "http/15-63f81ab86074.der",
+    "POST http://tsa.pki.test/ cf4a802a1a62dde0": "http/19-210f84c7543b.der",
+    "POST http://tsa.pki.test/ dbce9b70b8a01cd7": "http/20-c8b7bdce3eae.der",
+    "POST http://tsa.pki.test/ e393d7136f7f36e6": "http/21-907c56fced94.der",
     "POST http://tsa.pki.test/ e8d7e7a15a8687f3": "http/16-4b9f46364e26.der"
   },
   "cases": [
@@ -333,6 +338,200 @@
         "priorCmsSha256": [
           "3186e7062e96443b2a968d4d17b285f36e43e662573c8f00d87918255cd03a3e"
         ]
+      }
+    },
+    {
+      "name": "quartz-pdf13-visible",
+      "input": "input/quartz-pdf13.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "8a9b0c1d-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+        "verifyPage": true,
+        "fileName": "Гэрээ №1 (Quartz).pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "5f8afb701651cddfdf1bb0dceb9fa242eec3fc795f576baa6612fe181cbdd563",
+        "docId": "8a9b0c1d-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+        "digest": "5fac424915a5688dc4b10cd517027be81225396145cd1faf4f2034e9e8517537",
+        "dtbs": "19e3bb05e45a0b844f05e54dc4c75cfa0dbc2c660bbaaf73ec9c965c2fc98a88",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d010904312204205fac424915a5688dc4b10cd517027be81225396145cd1faf4f2034e9e8517537308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "80dfc27d303cd47f03d576b39353c4d81d148efff8e81ff8a31e67a76f77324ca03c702819705e1d5589026bf4faa8ef144981e4d5fd87b22d4456e4b529387a472d54918a73432d399d4f5a7a6f4669c5172f61d23956ba5ad3b6f6fe6de4f2f25d975c6ac0207d90ad2a7b14ee010000a89fc1a64233645db9e83ae42ad25bf88f6134d0177a7e1d022ebce5d4554fa75a7e5536c4f13ea9092cb4646c7e27a3099d6e3bb71dc70d424312ead3766751e54c4526254264b138954df4406ee1cdf15b9ed55e3fad169634c1000823eb124673d514ce22059832850d1af0ccef51462b53f4ff71dec5a2bed8b3bed05b75a6b28e46b66805cf482299b4a573a4",
+        "preparedSha256": "ff66ce7014302a7afe363725a80b4b9fdaba28b312024af790715e39a83375c9",
+        "byteRange": [
+          0,
+          126418,
+          183764,
+          107657
+        ],
+        "outSha256": "3010abe2bccad58e3ddea6737acebefc664a35050295750a2a2dc0b054486a07",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "090734e902c4c4dfc89ed517d57d5f5477beb4af05683bf5917774347964c1a7",
+        "sigRevSha256": "46d6fa9e0fdf899727d880f2d38b130238eb1414c0e155e0229deb29375fa61e",
+        "cmsSha256": "3a9adf48bacaed7bfc7aa54854701ec4ed63ee6708d06468a3487afb041a0c42"
+      }
+    },
+    {
+      "name": "quartz-pdf13-visible-en",
+      "input": "input/quartz-pdf13.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "9b0c1d2e-3f4a-4b5c-9d7e-8f9a0b1c2d3e",
+        "verifyPage": true,
+        "fileName": "Contract No.1 (Quartz).pdf",
+        "lang": "en",
+        "appearance": {
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "5f8afb701651cddfdf1bb0dceb9fa242eec3fc795f576baa6612fe181cbdd563",
+        "docId": "9b0c1d2e-3f4a-4b5c-9d7e-8f9a0b1c2d3e",
+        "digest": "f69fc92d4960289e371d5fa3a207288ccd420c4e7bcc7ceaa65a8ee63e6639ab",
+        "dtbs": "06cb82fad91d6bfd2ec2f66ec047b1a61d49eb82ac4a72b1abf4a68cd35b90ff",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d01090431220420f69fc92d4960289e371d5fa3a207288ccd420c4e7bcc7ceaa65a8ee63e6639ab308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "04427964e4afb10f352944840bffe588eed79fec700bc5d83ff6d451d708a91795a542b7743d0142ead4fe0c021ff4d35d75dad85a77f3f4dbdb8a780671998734ea5a5cc25caf394cddaab202ccb9ca6c760e2e70607f729ea9fe10c6cdbc5ee34ad9fbef3ee0d32addc782a58f2c2b3662b09e41b28c00d99fd85e8b85b5d9735f533b761e77e51c6d0384ebaff558d33aa7bfcaba7150fa034db099142922fac8f946d3a66371512d7a105b04ad8852d5d88dd69bd08acaa8f2bba8e9496c26fb4223a9609e7dbcc5ab81ce626807a35105c7730309cb812f67f0d2463b37ebc7288159644bea055f32d05e9181af3c880debea757bd128f538161ef8bbc6",
+        "preparedSha256": "33f97d5285fcbf60dc56e780030e414724f035f2c2cd7a590c7483d9d935bb3d",
+        "byteRange": [
+          0,
+          126423,
+          183769,
+          107636
+        ],
+        "outSha256": "d0457305bf312ec7fd34845b3d02cd4c9c188533bff8524b205f6ffc354b9f52",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "7f27f70def1a013cf910fbb739f4d6af8d0ea059291343e664defb7decfe3133",
+        "sigRevSha256": "46b26ef2db1aacd76b0dd9faba8c5bb947546ee347e8884ea7f177d8f2cb3fd0",
+        "cmsSha256": "c08a985d6564b06ef28fa81c2f04ddacea124a46d5bd4851c128a0f67831ae0d"
+      }
+    },
+    {
+      "name": "quartz-pdf13-visible-second",
+      "input": "case:quartz-pdf13",
+      "prepare": {
+        "signerCert": null,
+        "reason": "Тест ХХК-ийг төлөөлж",
+        "claimedRole": "Захирал, Тест ХХК (NTRMN-1234567)",
+        "signingTime": "0001-01-01T00:00:00Z",
+        "appearance": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 236,
+          "height": 72
+        }
+      },
+      "expect": {
+        "inputSha256": "d7dd3825a7067ef37399986a395abec8663f926876ebd8396248a459cd953d1a",
+        "docId": "6f0c2b9e-3a1d-4c55-9b7e-0a1b2c3d4e5f",
+        "digest": "b606cae079fa6c8ddbada7d48623f44e918fe58b3a1543584bfed836207a3d18",
+        "dtbs": "3e064df22cc3aa06d47732b7d74cee8eec4aeda0f25ab3ff422345d54639051d",
+        "signedAttrs": "3182011e301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d01090431220420b606cae079fa6c8ddbada7d48623f44e918fe58b3a1543584bfed836207a3d18304b0607040081953201013140303ea03c303a3038060355044831310c2fd097d0b0d185d0b8d180d0b0d0bb2c20d0a2d0b5d181d18220d0a5d0a5d09a20284e54524d4e2d3132333435363729308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "504b8505491534c9d800cfe2fa1a1a461ac87e9fcb55e26bddc1906efe2b26ee43acf35ab2e11fff994adfb46f317d3937689fa2a2a31b262ac57876cbe1c5b3563bb96d6b5c1a5f81276573167421fcc0d21dc67435d5b393790c48714d55bab353b77e394a1b7b81ac48846463494fd3735c49d9f7bc2cd8b602bb0a32ebf4ec9e1103f03b33ffc136f8eb068e2fec9a73e76319df34173276ff41344e461aa96cc421bd4ebbb1da1023278ce7a1080a0b1f791b6940b8d31dbf9a2720f284d2df28403228f4cd5dbc99bce6ba6021daee216a103b31ed550b3a4d70702cd9df3f13be8ca041293898d1159baa0e8668f5f49b264021c5dd0bc0fbbbf71584",
+        "preparedSha256": "c5582675a87253a3a6d7f6cd1b4ddb28ec07f14244af22b2f905da29a54cd883",
+        "byteRange": [
+          0,
+          194202,
+          251548,
+          108022
+        ],
+        "outSha256": "3c3c80664ba3de0496e7067b918b18346874729d1922667ea0729c3d4e5229da",
+        "revIndex": 2,
+        "sigRevSha256": "8a853156f7ee6987d2851f1c264495a29e325865695cd8ed3412c729568efd77",
+        "cmsSha256": "a665b417e301ebc593cd1d87fd9dcc5e6ee99ca9e98424fb47360bc9fb4b1a81",
+        "priorCmsSha256": [
+          "f6394ea03a2ef97fc7021e5d4dac477d75bc33b9f405804415a0be131b18e88f"
+        ]
+      }
+    },
+    {
+      "name": "quartz-pdf13-visible-twice",
+      "input": "case:quartz-pdf13-visible",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "lang": "en",
+        "appearance": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "3010abe2bccad58e3ddea6737acebefc664a35050295750a2a2dc0b054486a07",
+        "docId": "8a9b0c1d-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+        "digest": "e36afa24cc1a902d6bd25d09d2d216ed09cae2b723479f2d5ec50b9952bb466d",
+        "dtbs": "be6ff6da8b611e75c391c8a7f30807ce8a2e6fc8947d98cfd07a8fd21b642125",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d01090431220420e36afa24cc1a902d6bd25d09d2d216ed09cae2b723479f2d5ec50b9952bb466d308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "28a1bdea1469e681f1d68ffe877023feebc66535e62710bdaa25c210e8d4fff7c2e4bccb7b853024153da1ee62f0ab65cc7f8603f3e8908d732292e34988876c26ed148fdf0bab29972e90e07e3df3f9aea23d83d279476425a18b4575790a909dcd90a8e062096a9382d668c9183545950037dcc6fccedebb71ead66662dfb4ba3cce0788a0c54c5cdbd33f5568bb72f38dee40c50e1a99bdb412b7f062dfb56b2bfc4727f4b1b827c994af9a05c07f7ccd1f35e16a7e16c197fc42eface97c596682076ee5f6b2b1f0ab2508617ed0a016b043284d634e06acbb3d75973a48c67bfc6250e16e713fda64ee824e29a572c18ba3109a1d7c12e035fb5fa6b515",
+        "preparedSha256": "8f383c460cd30afcf463892c2e8a2c2097722b917b08d7d5105a88c0659fa341",
+        "byteRange": [
+          0,
+          300987,
+          358333,
+          107820
+        ],
+        "outSha256": "dca5a63cfe87d41a5e87909a3a73ee99b5ef68916fb1d6502fd5791714d98acd",
+        "revIndex": 2,
+        "sigRevSha256": "24183bbaf7796c2a365e08f21c6b5d259db6a4b105d445ba0be95bac41778841",
+        "cmsSha256": "b161090ca8ea43aaba8abb3a6b65b9ea0d129230ee7978153429260111981388",
+        "priorCmsSha256": [
+          "3a9adf48bacaed7bfc7aa54854701ec4ed63ee6708d06468a3487afb041a0c42"
+        ]
+      }
+    },
+    {
+      "name": "quartz-rotated90-visible",
+      "input": "input/quartz-rotated90.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "ac1d2e3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f",
+        "verifyPage": true,
+        "fileName": "rotated.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "d327a1260b3f4c6a30b074d0e8ea732195640f8a232ba234d315d9c77e8a5843",
+        "docId": "ac1d2e3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f",
+        "digest": "b6d604606243e52fc10965d46f0a110a0f5a89c8f7085008e06be200edbd729f",
+        "dtbs": "0bdccf3f62346abc9d798b0e9eedb4a234f49fee61e63343d7fa64fb8d80c25b",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d01090431220420b6d604606243e52fc10965d46f0a110a0f5a89c8f7085008e06be200edbd729f308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "413b30790c74d399b5023b255612bf276d7fdd41034346563d23c30ac33ce29f5d48b34672f1931fa374aa1183e789b42096af486632cb5096f2f6ffe3eae1a606c59da3099bf237a6cd209e7c7f4390073e648bd30cfbf2e298351c3af64db0c9f36876aca0210206dceef1aeefedf974084fd6437e0845a46fa35d3df45c9725112d36ade6c90471556318ded03e2219a481461ab91d7d37df86e738a75116b1408c2a32e689cf5a42be6c61d0f1aa0a1765555194c612144052bdabb296fbf2812df584d175c6bf20bd47660f2a4f673a4fbcde4c3d6c3ef6b578458d431da94b72edd7c82fbad258be1e76759ce1037f0c3c09aa564743db68d05360882b",
+        "preparedSha256": "46dcaa875e200d381761a99deaa3a6b702cbdb88684ac337b76f44c4bc366e75",
+        "byteRange": [
+          0,
+          126401,
+          183747,
+          107730
+        ],
+        "outSha256": "3ac0e9c398f292241a3f67aff8bc08b789dc2595330ad0a2a8352a56551beff0",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "6e859dc9a9e6969752eb61f565b362e3c8c1c0d0448218639bb7a724401a2773",
+        "sigRevSha256": "e49f8f557a17e79e205bf645996af40d248afc8d2d701ef1197ec071aef4eb01",
+        "cmsSha256": "265d96229709cae2f2c6f78a3fd4d7d29858adcddf46efbf2baf5821fad73c34"
       }
     },
     {
