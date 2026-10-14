@@ -15,7 +15,7 @@
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.1.0")
+    .package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.2.0")
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -23,6 +23,8 @@ targets: [
     ])
 ]
 ```
+
+Хувилбар: хамгийн сүүлийн tag-ийг ашиглана ([releases](https://github.com/gerege-systems/eid-mongolia-sdk-swift/tags)).
 
 Xcode: **File → Add Package Dependencies…** → `https://github.com/gerege-systems/eid-mongolia-sdk-swift.git`.
 
@@ -82,5 +84,5 @@ and returns a 32-byte DTBS to be signed by the citizen's phone or USB token; `co
 RFC 3161 timestamp, OCSP/CRL and DSS (PAdES B-LT). Output is byte-identical to the Go reference
 (`gerege-systems/eid-mongolia-sdk-go`, profile `pades-client/1`), enforced by golden vectors in CI.
 iOS 14+ / macOS 13+, no third-party dependencies. Install via SwiftPM:
-`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.1.0")`, product
+`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.2.0")` (use the latest tag), product
 `GeregeEIDPades`. This repository is a read-only mirror; please file issues here.
