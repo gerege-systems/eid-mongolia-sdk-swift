@@ -1,0 +1,28 @@
+name: CI
+on:
+  push:
+    branches: [main]
+    tags: ["*"]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+      # Vendored golden = golden/SOURCE-ийн Go tag (байт-ижил)
+      - name: Golden vectors match Go reference tag
+        run: bash scripts/sync-pades-golden.sh --check
+      - name: swift test (macOS)
+        run: swift test --parallel
+      - name: Build for iOS Simulator
+        run: >-
+          xcodebuild build -quiet -scheme GeregeEIDPades
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
