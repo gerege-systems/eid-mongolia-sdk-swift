@@ -70,7 +70,8 @@ public enum EidPades {
     /// of the page's CropBox (else MediaBox) as DISPLAYED (after /Rotate); x to the right, y up; rounded to 0.01 pt.
     /// Height ≥ 45 pt (QR), else REQUEST_INVALID.
     public struct SignatureAppearance: Sendable, Equatable {
-        /// Input document page, 1-based; 0 = the input's last page (this prepare's verify page is not counted).
+        /// Input document page, 1-based (an explicit number is kept as is); 0 = the input's last page that is not an eID
+        /// verify page — neither this prepare's verify page nor earlier revisions' ones count (PLACEMENT_SPEC §1a).
         public var page: Int
         public var x: Double
         public var y: Double
@@ -390,17 +391,17 @@ public enum EidPades {
         }
     }
 
-    /// Go `visibleSpec`: page (0 → the input's last), h100, language, +08 date, verify URL.
+    /// Go `visibleSpec`: page (0 → the last page that is not an eID verify page, PLACEMENT_SPEC §1a), h100, language, +08 date, verify URL.
     static func visibleSpec(_ doc: [UInt8], _ a: SignatureAppearance, _ o: PrepareOptions, name: String, now: Date,
                             docID: String, revIndex: Int) throws -> Appearance.Visible {
         guard !docID.isEmpty else {
             throw EidPadesError(code: .requestInvalid, message: "appearance: docId required (the document has no verify page)")
         }
-        let n: Int
-        do { n = try Appearance.pageCount(doc) } catch {
+        let last: Int, n: Int
+        do { (last, n) = try Appearance.defaultStampPage(doc, verifyURI: Prechecks.verifyURLPrefix + docID) } catch {
             throw EidPadesError(code: .pdfInvalid, message: "PDF: \(error)")
         }
-        let page = a.page == 0 ? n : a.page
+        let page = a.page == 0 ? last : a.page
         guard page <= n else { throw EidPadesError(code: .requestInvalid, message: "appearance: page \(page) > page count \(n)") }
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")

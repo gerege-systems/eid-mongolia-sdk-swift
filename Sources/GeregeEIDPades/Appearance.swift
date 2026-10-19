@@ -239,6 +239,43 @@ enum Appearance {
         return try walk(root, 0)
     }
 
+    /// Go `core.DefaultStampPage` (PLACEMENT_SPEC §1a): the page for `appearance.page` 0 — the last page (tree order) that
+    /// is not an eID verify page — and the page count n. All pages verify pages → n.
+    static func defaultStampPage(_ doc: [UInt8], verifyURI: String) throws -> (page: Int, n: Int) {
+        let inc = try PdfIncremental(doc)
+        let r = inc.reader
+        var pages: [PdfDict] = []
+        func walk(_ node: PdfObject, _ depth: Int) throws {
+            guard depth <= maxDepth, pages.count <= 1 << 16, let d = try r.resolve(node).dict else { return }
+            switch try r.resolve(d["Type"]).nameValue {
+            case "Page": pages.append(d)
+            case "Pages":
+                for kid in try r.resolve(d["Kids"]).array ?? [] { try walk(kid, depth + 1) }
+            default: break
+            }
+        }
+        try walk(inc.root["Pages"], 0)
+        let n = pages.count
+        for i in stride(from: n - 1, through: 0, by: -1) where !isVerifyPage(r, pages[i], verifyURI: verifyURI) {
+            return (i + 1, n)
+        }
+        return (n, n)
+    }
+
+    /// Go `isVerifyPage`: /Annots (first 10 000) holds a /Link whose /A is `/S /URI` with /URI byte-equal to verifyURI.
+    /// Anything unreadable → false (a content page).
+    static func isVerifyPage(_ r: PdfReader, _ page: PdfDict, verifyURI: String) -> Bool {
+        guard let annots = (try? r.resolve(page["Annots"]))?.array else { return false }
+        let want = Array(verifyURI.utf8)
+        for e in annots.prefix(10_000) {
+            guard let a = (try? r.resolve(e))?.dict, (try? r.resolve(a["Subtype"]))?.nameValue == "Link",
+                  let act = (try? r.resolve(a["A"]))?.dict, (try? r.resolve(act["S"]))?.nameValue == "URI",
+                  case .string(let u) = (try? r.resolve(act["URI"])) ?? .null else { continue }
+            if u == want { return true }
+        }
+        return false
+    }
+
     /// Number of /Page objects in the /Pages tree (counted, /Count is not trusted).
     static func pageCount(_ doc: [UInt8]) throws -> Int {
         let inc = try PdfIncremental(doc)
