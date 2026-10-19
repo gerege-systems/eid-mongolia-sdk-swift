@@ -51,6 +51,13 @@ final class GoldenTests: XCTestCase {
             var cmsSha256: String?
             var sigRevSha256: String?
             var priorCmsSha256: [String]?
+            var placement: Placement?
+        }
+        /// Go `pades.Placement` (PLACEMENT_SPEC.md) — every visible case has one.
+        struct Placement: Decodable {
+            var page: Int
+            var x, y, width, height: Double
+            var status: String
         }
         var name: String
         var input: String
@@ -146,6 +153,9 @@ final class GoldenTests: XCTestCase {
             if let want = c.expect.signedAttrs { XCTAssertEqual(Crypto.hex(st.signedAttrs), want, "\(c.name) signedAttrs") }
             XCTAssertEqual(st.preparedSha256, c.expect.preparedSha256, "\(c.name) prepared PDF")
             XCTAssertEqual(st.byteRange, c.expect.byteRange, "\(c.name) byteRange")
+            XCTAssertEqual(p.placement.map { [Double($0.page), $0.x, $0.y, $0.width, $0.height] },
+                           c.expect.placement.map { [Double($0.page), $0.x, $0.y, $0.width, $0.height] }, "\(c.name) placement")
+            XCTAssertEqual(p.placement?.status.rawValue, c.expect.placement?.status, "\(c.name) placement status")
             guard let sigHex = c.expect.signature else { throw XCTSkip("manifest without expect.signature") }
 
             var co = EidPades.CompleteOptions(tsaUrl: "http://tsa.pki.test/", roots: [root],
@@ -168,9 +178,13 @@ final class GoldenTests: XCTestCase {
                 XCTAssertEqual(done.revIndex, c.expect.revIndex, c.name)
                 XCTAssertEqual(done.sigRevSha256, c.expect.sigRevSha256, "\(c.name) sigRev")
                 XCTAssertEqual(done.priorCmsSha256, c.expect.priorCmsSha256 ?? [], "\(c.name) priorCms")
-                // Prior signature's revision = that signature's own sigRevSha256 (CA mode A `sig_rev_sha256`).
-                let prev = c.input.hasPrefix("case:") ? m.cases.first { $0.name == String(c.input.dropFirst(5)) } : nil
-                XCTAssertEqual(done.priorRevisionSha256, prev.flatMap { $0.expect.sigRevSha256 }.map { [$0] } ?? [], "\(c.name) priorRevision")
+                // Prior signatures' revisions = each earlier case's own sigRevSha256 (CA mode A `sig_rev_sha256`), in
+                // document order along the `case:` chain (golden v5 `quartz-pdf13-visible-third` has two).
+                func revisions(_ input: String) -> [String] {
+                    guard input.hasPrefix("case:"), let prev = m.cases.first(where: { $0.name == String(input.dropFirst(5)) }) else { return [] }
+                    return revisions(prev.input) + [prev.expect.sigRevSha256 ?? ""]
+                }
+                XCTAssertEqual(done.priorRevisionSha256, revisions(c.input), "\(c.name) priorRevision")
                 XCTAssertEqual(done.signerCert, citizen, c.name)
                 try checkRegistration(done, c)
                 outputs[c.name] = done.pdf
@@ -180,7 +194,8 @@ final class GoldenTests: XCTestCase {
             }
         }
         print("golden: \(full) full prepare+complete byte-identical (visible: \(m.cases.filter { $0.prepare.appearance != nil }.count)); skipped: \(skipped)")
-        XCTAssertGreaterThanOrEqual(m.cases.filter { $0.prepare.appearance != nil }.count, 5)
+        XCTAssertGreaterThanOrEqual(m.cases.filter { $0.prepare.appearance != nil }.count, 11)
+        XCTAssertEqual(m.cases.filter { $0.prepare.appearance != nil }.count, m.cases.filter { $0.expect.placement != nil }.count)
         XCTAssertEqual(full, m.cases.filter { $0.expect.error == nil }.count, "every non-error case must complete byte-identically")
         XCTAssertTrue(skipped.isEmpty)
     }

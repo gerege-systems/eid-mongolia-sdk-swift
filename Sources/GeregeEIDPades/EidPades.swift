@@ -97,6 +97,27 @@ public enum EidPades {
         public let docId: String
         /// Opaque; may be persisted while waiting for the signature.
         public let state: Data
+        /// Where the visible stamp was drawn; nil without `appearance` (PLACEMENT_SPEC.md).
+        public let placement: Placement?
+    }
+
+    /// The visible stamp's final rect (`SignatureAppearance` coordinates, pt) and how it was chosen (Go
+    /// `pades.Placement`, Android `Placement`). The stamp avoids existing page content (PLACEMENT_SPEC.md): `.requested`
+    /// = drawn at appearance x/y; `.moved` = that spot was occupied and the stamp moved to free space; `.overlap` = no
+    /// free spot, drawn at the requested spot over content; `.unscanned` = the page could not be scanned within the
+    /// limits, drawn at the requested spot. Surface `.overlap` / `.unscanned` to the signer — the signature is valid
+    /// either way.
+    public struct Placement: Sendable, Equatable {
+        public enum Status: String, Sendable {
+            case requested, moved, overlap, unscanned
+        }
+        /// 1-based page the stamp is on.
+        public let page: Int
+        public let x: Double
+        public let y: Double
+        public let width: Double
+        public let height: Double
+        public let status: Status
     }
 
     public struct CompleteOptions: Sendable {
@@ -231,7 +252,13 @@ public enum EidPades {
                        byteRange: prep.byteRange, revIndex: revIndex, inSha256: inHex, hasPage: hasPage,
                        pageSha256: pageHex.isEmpty ? nil : pageHex, claimedRole: o.claimedRole?.nilIfEmpty,
                        fileName: fileName, preparedSha256: Crypto.hex(Crypto.sha256(prep.pdf)), pdf: prep.pdf)
-        return Prepared(dtbs: Data(CMS.dtbs(attrs)), digest: Data(prep.digest), docId: docID, state: Data(try st.encode()))
+        var placement: Placement?
+        if let vis = visible, let pl = prep.placement {
+            placement = Placement(page: vis.page, x: Double(pl.x) / 100, y: Double(pl.y) / 100, width: Double(vis.w) / 100,
+                                  height: Double(vis.h) / 100, status: Placement.Status(rawValue: pl.status.rawValue) ?? .unscanned)
+        }
+        return Prepared(dtbs: Data(CMS.dtbs(attrs)), digest: Data(prep.digest), docId: docID, state: Data(try st.encode()),
+                        placement: placement)
     }
 
     // MARK: - complete

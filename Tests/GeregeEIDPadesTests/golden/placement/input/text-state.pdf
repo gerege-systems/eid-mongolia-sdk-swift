@@ -1,0 +1,39 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 476 >>
+stream
+BT /F1 12 Tf 72 700 Td 2 Tc 5 Tw (Spaced words here) Tj ET
+BT /F1 12 Tf 150 Tz 3 Ts 72 650 Td (Wide and raised) Tj ET
+BT /F1 10 Tf 14 TL 72 600 Td (first) Tj T* (second) ' 1 2 (third) " ET
+BT /F1 11 Tf 72 500 Td [(Kern) -500 (ed) 2000 (back)] TJ ET
+BT /F1 10 Tf 0.7071 0.7071 -0.7071 0.7071 300 300 Tm (Rotated text line) Tj ET
+BT /F1 -10 Tf 72 200 Td (Negative size) Tj ET
+BT /F1 9 Tf 200 40 Td (Footer text that sits right under the default stamp position on the page) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding /FirstChar 32 /LastChar 126 /Widths [650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450] >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000774 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1289
+%%EOF

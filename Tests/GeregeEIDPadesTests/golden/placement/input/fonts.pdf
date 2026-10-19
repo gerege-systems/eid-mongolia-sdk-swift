@@ -1,0 +1,54 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R /T0 6 0 R /T1 8 0 R /T3 9 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 261 >>
+stream
+BT /T0 12 Tf 72 700 Td <0001000200030004000A> Tj ET
+BT /T1 12 Tf 72 650 Td <00410042> Tj ET
+BT /T3 12 Tf 72 600 Td (abc) Tj ET
+BT /Missing 12 Tf 72 550 Td (abc) Tj ET
+BT 72 500 Td (no Tf yet) Tj ET
+BT /T0 10 Tf 420 50 Td <00010002000300040005000600070008> Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding /FirstChar 32 /LastChar 126 /Widths [650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450 500 550 600 650 700 750 450] >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type0 /BaseFont /Helvetica /Encoding /Identity-H /DescendantFonts [7 0 R] >>
+endobj
+7 0 obj
+<< /Type /Font /Subtype /CIDFontType2 /BaseFont /Helvetica /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /DW 800 /W [1 [500 600] 3 5 700 1 [900]] >>
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type0 /BaseFont /STSong-Light /Encoding /UniGB-UCS2-H /DescendantFonts [7 0 R] >>
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type3 /FontBBox [0 0 1000 1000] /FontMatrix [0.001 0 0 0.001 0 0] /CharProcs << >> /Encoding << /Differences [] >> /FirstChar 97 /LastChar 99 /Widths [1 1 1] >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000277 00000 n 
+0000000589 00000 n 
+0000001104 00000 n 
+0000001221 00000 n 
+0000001413 00000 n 
+0000001535 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+1736
+%%EOF

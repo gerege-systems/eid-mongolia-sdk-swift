@@ -13,20 +13,26 @@
     "POST http://ocsp.pki.test/04 3d432940c5514c0a": "http/05-f4fae8087a68.der",
     "POST http://ocsp.pki.test/04 5167f83c7d8126d9": "http/06-b4ccb5877c32.der",
     "POST http://tsa.pki.test/ 0dc8ca4957b79ce6": "http/17-7e33f76f0433.der",
+    "POST http://tsa.pki.test/ 16d05d0179e5c3f3": "http/22-ff6c617bdd1e.der",
+    "POST http://tsa.pki.test/ 3c2df96fc90a78bd": "http/23-b11987ef3174.der",
     "POST http://tsa.pki.test/ 466c567599f24e6e": "http/07-1369ee615430.der",
     "POST http://tsa.pki.test/ 57f5397b454045bd": "http/08-40c7edd94f13.der",
     "POST http://tsa.pki.test/ 6b8e51d6f594ee9c": "http/09-e556daafa098.der",
+    "POST http://tsa.pki.test/ 738170c7ab14a8a8": "http/24-8f4b7df94839.der",
     "POST http://tsa.pki.test/ 8dad7b20fd0e2ad8": "http/10-b719e53d897d.der",
     "POST http://tsa.pki.test/ 90f3b413e4c57d18": "http/11-cd50b9506366.der",
     "POST http://tsa.pki.test/ 9e12fb25b82dc264": "http/12-8fc107a5b268.der",
     "POST http://tsa.pki.test/ a07f55fd73d7511f": "http/13-97e324e0fbe0.der",
+    "POST http://tsa.pki.test/ a348c19722ca4aa4": "http/25-73b38c1c8f00.der",
     "POST http://tsa.pki.test/ a41b73417a686b11": "http/14-559a8f2a540d.der",
     "POST http://tsa.pki.test/ acdec6b46401e83b": "http/18-cd7763c98dd0.der",
     "POST http://tsa.pki.test/ af79cd1447a8acb8": "http/15-63f81ab86074.der",
     "POST http://tsa.pki.test/ cf4a802a1a62dde0": "http/19-210f84c7543b.der",
     "POST http://tsa.pki.test/ dbce9b70b8a01cd7": "http/20-c8b7bdce3eae.der",
     "POST http://tsa.pki.test/ e393d7136f7f36e6": "http/21-907c56fced94.der",
-    "POST http://tsa.pki.test/ e8d7e7a15a8687f3": "http/16-4b9f46364e26.der"
+    "POST http://tsa.pki.test/ e8d7e7a15a8687f3": "http/16-4b9f46364e26.der",
+    "POST http://tsa.pki.test/ f3f398cecfd52d43": "http/26-8c7d19aa5d9e.der",
+    "POST http://tsa.pki.test/ faa4ea4fa405abe4": "http/27-8c17e449a860.der"
   },
   "cases": [
     {
@@ -376,7 +382,15 @@
         "hasPage": true,
         "pageSha256": "090734e902c4c4dfc89ed517d57d5f5477beb4af05683bf5917774347964c1a7",
         "sigRevSha256": "46d6fa9e0fdf899727d880f2d38b130238eb1414c0e155e0229deb29375fa61e",
-        "cmsSha256": "3a9adf48bacaed7bfc7aa54854701ec4ed63ee6708d06468a3487afb041a0c42"
+        "cmsSha256": "3a9adf48bacaed7bfc7aa54854701ec4ed63ee6708d06468a3487afb041a0c42",
+        "placement": {
+          "page": 1,
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested"
+        }
       }
     },
     {
@@ -415,7 +429,15 @@
         "hasPage": true,
         "pageSha256": "7f27f70def1a013cf910fbb739f4d6af8d0ea059291343e664defb7decfe3133",
         "sigRevSha256": "46b26ef2db1aacd76b0dd9faba8c5bb947546ee347e8884ea7f177d8f2cb3fd0",
-        "cmsSha256": "c08a985d6564b06ef28fa81c2f04ddacea124a46d5bd4851c128a0f67831ae0d"
+        "cmsSha256": "c08a985d6564b06ef28fa81c2f04ddacea124a46d5bd4851c128a0f67831ae0d",
+        "placement": {
+          "page": 1,
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested"
+        }
       }
     },
     {
@@ -454,7 +476,15 @@
         "cmsSha256": "a665b417e301ebc593cd1d87fd9dcc5e6ee99ca9e98424fb47360bc9fb4b1a81",
         "priorCmsSha256": [
           "f6394ea03a2ef97fc7021e5d4dac477d75bc33b9f405804415a0be131b18e88f"
-        ]
+        ],
+        "placement": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 236,
+          "height": 72,
+          "status": "requested"
+        }
       }
     },
     {
@@ -492,7 +522,15 @@
         "cmsSha256": "b161090ca8ea43aaba8abb3a6b65b9ea0d129230ee7978153429260111981388",
         "priorCmsSha256": [
           "3a9adf48bacaed7bfc7aa54854701ec4ed63ee6708d06468a3487afb041a0c42"
-        ]
+        ],
+        "placement": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested"
+        }
       }
     },
     {
@@ -531,7 +569,297 @@
         "hasPage": true,
         "pageSha256": "6e859dc9a9e6969752eb61f565b362e3c8c1c0d0448218639bb7a724401a2773",
         "sigRevSha256": "e49f8f557a17e79e205bf645996af40d248afc8d2d701ef1197ec071aef4eb01",
-        "cmsSha256": "265d96229709cae2f2c6f78a3fd4d7d29858adcddf46efbf2baf5821fad73c34"
+        "cmsSha256": "265d96229709cae2f2c6f78a3fd4d7d29858adcddf46efbf2baf5821fad73c34",
+        "placement": {
+          "page": 1,
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested"
+        }
+      }
+    },
+    {
+      "name": "libreoffice-contract-visible",
+      "input": "input/libreoffice-contract.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+        "verifyPage": true,
+        "fileName": "ТЕСТ гэрээ.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "87a33381677115e17369a3b8a865ba0b332f00a7368c04f494b2447428ae37d2",
+        "docId": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+        "digest": "9d1c0cbb9a90c3433738803186cae78b51a3508ffee997d760b5c20cc2f08284",
+        "dtbs": "b1818d0f0e4a34d1b947557649c73db331c71d2fe7fce8dc62aad7bc354d0a22",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d010904312204209d1c0cbb9a90c3433738803186cae78b51a3508ffee997d760b5c20cc2f08284308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "4b6461ddf2f62656b92e3d6a739fa27c1ff99f66dbd3ec37ee550c382a6622a148d2c8e7104cde935ee39ac4e60722826504519dc573877f4d9bf5719188dccb5ab76e3434f39ee08ea5608b2063156fb8f816e3d919a70641722ea142389a6f652f57cfc38a5a798f71487694d7f4791b90d25e94a4032ce840e28ab665d2dbdd05d242e6a74c53f881e25f14506bf1a70ae9c71775ca286dc1c1095055d9b0ef48fd2d37475a8173e9f3afde3c68a99a4c9af3bb98238d3ac50eb557227d141cf51e91e8eaba63d28932f85349fc8db0844a3048355720aaf8a2844ae73c12e0aa14c48cf2fe4f31fd64d7fd7fd4e2fda972233536b13a39957b6eb1045cfa",
+        "preparedSha256": "e45e10e537e85ef4c0bfb9b12b8c2710d857cc81aa5b4ab43e71700c428e4f9f",
+        "byteRange": [
+          0,
+          143730,
+          201076,
+          107609
+        ],
+        "outSha256": "892c345e0540dd559762f5c29e4f35d936b0f55ea19812a1307152b89769ae12",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "173c7d55bdc63664d4a919ce67a45ce6d327a83738962a8404f75b7a82c40d62",
+        "sigRevSha256": "7525490bc9ebc7c5d1288e40b812b27dadefc337abd549faa0ddeab1721af3e1",
+        "cmsSha256": "d185b895d4cce0fc108f764df1772ac536c9aaf9dd671bcb7bff62b1e95d82ea",
+        "placement": {
+          "page": 2,
+          "x": 340,
+          "y": 60,
+          "width": 220,
+          "height": 64,
+          "status": "moved"
+        }
+      }
+    },
+    {
+      "name": "libreoffice-contract-visible-second",
+      "input": "case:libreoffice-contract-visible",
+      "prepare": {
+        "signerCert": null,
+        "reason": "Тест ХХК-ийг төлөөлж",
+        "claimedRole": "Захирал, Тест ХХК (NTRMN-1234567)",
+        "signingTime": "0001-01-01T00:00:00Z",
+        "appearance": {
+          "page": 2,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "892c345e0540dd559762f5c29e4f35d936b0f55ea19812a1307152b89769ae12",
+        "docId": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+        "digest": "b3898414ea9b5b73898a733c38746c5a162ed039fdd61c4a88bdccdec13fbe52",
+        "dtbs": "cb81e3f7ccbedd77e3d62689d3e2f0c60bc4a72941e3d7743ab88f488ed50b4f",
+        "signedAttrs": "3182011e301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d01090431220420b3898414ea9b5b73898a733c38746c5a162ed039fdd61c4a88bdccdec13fbe52304b0607040081953201013140303ea03c303a3038060355044831310c2fd097d0b0d185d0b8d180d0b0d0bb2c20d0a2d0b5d181d18220d0a5d0a5d09a20284e54524d4e2d3132333435363729308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "7548fd2632cda7ef1909988881aca949df9ea6c3fc0e121e36cd3361f4927ba6a6ebe8fcfab00ee8684956df5c626b3105acef2faf290a64f404d2b1f77622f5959c57bfae308b195a6f63c14797a975e9209f75936e274722d574dff1e021c0bb585f58510866f1ef8a9d9b1c48ea1f5804fbbf32ef834fb14935b66540e2fe596a3f671fc81a09ff780dd5eaa207333b7a5f3c2aaa34f5dd9807f66d26732949736ebdfc0c86644eb93b7d62d6cd0896f624ed84b030836c6e4aceaf76ecef546c80e38163949eef1a32e160ee51b3e42296cfd627912c4deeef2978d58f3e7d9c8ca1a40a165df6b718ef75fdd66c0885f1f2ac2e0670aa08d3b7f485cd60",
+        "preparedSha256": "3d3fac2f39bee657433a7e47f9e1b650264e070ae746465fa822ea3ece8fd8c2",
+        "byteRange": [
+          0,
+          318295,
+          375641,
+          107966
+        ],
+        "outSha256": "a88fbfcf7b870c786bd1d8d11cc2a6a1088fb4a7a1340dad7c8cabfa6a736638",
+        "revIndex": 2,
+        "sigRevSha256": "9f29a816351ed812af75e3f79d192aa7ba1edc986c92f565f6fce848a032af8a",
+        "cmsSha256": "fd0c1844e9f091ec459136830be8e60654d29b8156d7a2d78caf400ce43b8319",
+        "priorCmsSha256": [
+          "d185b895d4cce0fc108f764df1772ac536c9aaf9dd671bcb7bff62b1e95d82ea"
+        ],
+        "placement": {
+          "page": 2,
+          "x": 340,
+          "y": 132,
+          "width": 220,
+          "height": 64,
+          "status": "moved"
+        }
+      }
+    },
+    {
+      "name": "table-bottom-visible",
+      "input": "input/table-bottom.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+        "verifyPage": true,
+        "fileName": "table.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "6dd8e577e7c17bd8dabbec20293c495ce33c1f5361562c9750b31c5edbbe416e",
+        "docId": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+        "digest": "63b243c31f411f60a54aa3a878a801143de2ccc1bfffb84371284da872608a51",
+        "dtbs": "355ab25df7d3dc4beec009dd881252709e3acee74aa0f992a854cbfc259a3bc6",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d0109043122042063b243c31f411f60a54aa3a878a801143de2ccc1bfffb84371284da872608a51308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "287034ac8976aa895111ee1d1989f3318bb83dc0331670a88da1dac915ed520f35647aa861d77f6eefe4f0192ed10978211e825c20bf146bdcd0f892ae3f80c2b868682e31142447befb658458573d67ebfaabf10fc6cdca579032e3f5b8f61c19e0c6744be47a4be1cde2842e2e4eea41d051cf0c39c958cc7e6bad24e50b745298e2d5c4dc474e293df8d4eb5b10e928921628a09cc8454e838da0ab730bae7aa55a4b625ce9bfd6a9f1d86adfe3ce4957b5aa518b17fed2ae37c8df87e1204aa35e66ee9dd00f869bcfb723b59dccf1aadb63ee41b9dfff42b9975ec924445ceaec64982cab9d0f17ce0c1ad83bcf1382dc972e892a68df3f4517eae1ae9a",
+        "preparedSha256": "e10f158624e062fd7d5ee9345531c257da937007897daec4c0e6df91727b0925",
+        "byteRange": [
+          0,
+          115354,
+          172700,
+          107660
+        ],
+        "outSha256": "ec8f159d47a2f1e83e39c0b473fcb7430743bf257c508beeb41d66948837d1e4",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "13970f118c56704b1b9c139390de2491136d1017aa0d3247bd0f8e24757c970b",
+        "sigRevSha256": "ecbd483a9c22906bb42a45e4dd1a6c10c65c222dc2372f1e68fbc54ba2bee2e9",
+        "cmsSha256": "2ebd788afe91bddf85885e1a43465a02680a4a8fbe3db693a454c56f857c4749",
+        "placement": {
+          "page": 1,
+          "x": 340,
+          "y": 168,
+          "width": 220,
+          "height": 64,
+          "status": "moved"
+        }
+      }
+    },
+    {
+      "name": "rotated90-footer-visible",
+      "input": "input/rotated90-footer.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "d3e4f5a6-b7c8-4d9e-8f1a-2b3c4d5e6f70",
+        "verifyPage": true,
+        "fileName": "landscape.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 536,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "6a10e58a96ef983a93bafe8ddb832a12c3164794fdf83378f2c5bb6363ba1a84",
+        "docId": "d3e4f5a6-b7c8-4d9e-8f1a-2b3c4d5e6f70",
+        "digest": "76ccc20c917750b020827768b35aa178b2b2174b726b8dd88b1b1314ad898287",
+        "dtbs": "c8ddf9cd6b54d71bb8feac5974272883ac3b0c97ec563861387e9fe6385c72b3",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d0109043122042076ccc20c917750b020827768b35aa178b2b2174b726b8dd88b1b1314ad898287308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "8ae56bc0b93f71b045fb739cde095f85e86c2bbb22bec243bd91c06fbe96ab812bfeeb612d64ad1e9b1e0ad18598cc5de8a9d70e93fc6f039686c09bb623bdef5bf0d011bef9270694a529e34306753f245e12afaac553ea4376b4fad6fd53d904d10e055e0661dcaf154ae8ff025c39efa487efd67158bf50ec8f5b72153e45299e96af1c75f1db591b5b2bd4fe76c4dbab43c5762685c7793efdcd3905766b0a2cb996ddc2463e907172d5ae49af2f5461451f25028b68bb9acf7804308c753910824e2a88ccece177db18514780c9116d71766badd9433c4680bbda6cd21fb84a7c4409992c5143582329e056eca7b88846e5d1331d47cdf3565457169a70",
+        "preparedSha256": "5990903c10e0c899b86030a895c6a83aa12228a48fcb5cc86dcdff2ff9c85546",
+        "byteRange": [
+          0,
+          114119,
+          171465,
+          107524
+        ],
+        "outSha256": "b72b55420f64e1eb4eeb53b4897c733bd8f57d0271f1e13ea3f1c50a60fb9170",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "2cf3c570ff7238ac5cbf0d634ede87e110ca40d86150d565262af667e40b80e3",
+        "sigRevSha256": "943e7da1687ff8845814e15dbe8aa8ce816c4faeccc84042eb8fe5617fe85a2b",
+        "cmsSha256": "1ff5983d6f26cf0c28737272dbe27dadc9fb879a7230e895a65fd2c8a06c354c",
+        "placement": {
+          "page": 1,
+          "x": 536,
+          "y": 60,
+          "width": 220,
+          "height": 64,
+          "status": "moved"
+        }
+      }
+    },
+    {
+      "name": "quartz-pdf13-visible-third",
+      "input": "case:quartz-pdf13-visible-second",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "lang": "en",
+        "appearance": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "3c3c80664ba3de0496e7067b918b18346874729d1922667ea0729c3d4e5229da",
+        "docId": "6f0c2b9e-3a1d-4c55-9b7e-0a1b2c3d4e5f",
+        "digest": "e0d3561bac872f77b75a224e2974dd25e200917122fab884d0927fe6453cd175",
+        "dtbs": "8aa0343c6c168ea4a6dc6c1c53abeb49994b49b6dddd9341e08f7fd83129e8a8",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d01090431220420e0d3561bac872f77b75a224e2974dd25e200917122fab884d0927fe6453cd175308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "02219eace6cf8e7595a67d0a4376c21aead373533c1b0e8fb13bf42c61cd24b170e3c8fb85a46d2f36cb32fa3d4f59a2d8c228b7f89892fa3e5ac72c7da64bcff1c09041bec151c62dc6629f90be0ca269d9d4a68b1568bf9c7c6d6a0a6fb182c18baccd34063ee26d7e06efb3de87fab0b9c1d9d8029e4a72831909255faa97f14f9ab0cb7d357be881f988b45ebec1383160164acb58ef0881a47ee568949e817398e01db71494f7a2f8f4281e4d6a050127185b24d07d0a20a4948984b51353a9ec197b05a024cffe1a4f2ef048816ca5076023f69f3aa4818e86bf8a92895a3eb799177ecf0b4967a53825969d6b81a669d278952d9bf87cc898c4f2f3a0",
+        "preparedSha256": "250665384be23ddde4267268b9450e4c74698e80a853a26ad58088411b854510",
+        "byteRange": [
+          0,
+          360523,
+          417869,
+          107710
+        ],
+        "outSha256": "206db17367dae8d8eaa6c675d5efa7c05a1c011421f9d7c6b5835aaef3a63177",
+        "revIndex": 3,
+        "sigRevSha256": "59c1d40001e83b1eec792fd993e133aafba026fad4e7a531dd9df5e55dd87d3a",
+        "cmsSha256": "d3cf777c0b4afd907eded57201d4bdcab672cc23ae3ed90742e5e03e4b7f95d8",
+        "priorCmsSha256": [
+          "f6394ea03a2ef97fc7021e5d4dac477d75bc33b9f405804415a0be131b18e88f",
+          "a665b417e301ebc593cd1d87fd9dcc5e6ee99ca9e98424fb47360bc9fb4b1a81"
+        ],
+        "placement": {
+          "page": 1,
+          "x": 52,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "moved"
+        }
+      }
+    },
+    {
+      "name": "full-page-visible",
+      "input": "input/full-page.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "e4f5a6b7-c8d9-4e0f-9a2b-3c4d5e6f7081",
+        "verifyPage": true,
+        "fileName": "full.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "525f2af72888be66681e71143797531ee1f1b6ea439b5f216c3590b22880a7b1",
+        "docId": "e4f5a6b7-c8d9-4e0f-9a2b-3c4d5e6f7081",
+        "digest": "bcd5d8d5c1f3d6a8b5262027b7fc2d268c30a4700d56bdff06c8dc72052a6395",
+        "dtbs": "f3e2fdbcb637ef55c1126efd2035aaf26841406e4ecdf3dba86708598d23d645",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d01090431220420bcd5d8d5c1f3d6a8b5262027b7fc2d268c30a4700d56bdff06c8dc72052a6395308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "438a7021111b85dd605ee723879f22d6b53ba1b8411765ed20c6d2049d391870556ca66d06d6ab105d7edb143a1ec867528435809e792f7ae3cadb0d55081529644d8f928d1aff9ea0b074f0cac70a32e70798270274fd8e9e9b7e6326ea9fa77b4becbb9f6ed3c7ef107749b8704a33c4e26eb5dbe7bc12ee7184cc0f308e4e1b31c8ac27e85e782be9e9b35cc61532ccefadcf6c8f14b24cfada715120d3150a63aa8334ec3991e86da4f7a72dc9d82b57b7d6044bd28e0051806b100f94e9082b85fc99e266e8aa9c180e3eb2d7dab399023d21cc3cfcbe509ace3f4fb029e5f30fcfd002b568176052c009a29711a21b755e8e3c3f80c14727a0ae7eb935",
+        "preparedSha256": "4c489820c4a2759e6cf06d7c82ae6bd1609ead56ff20d12bb7e2944f2b9bf12d",
+        "byteRange": [
+          0,
+          118789,
+          176135,
+          107570
+        ],
+        "outSha256": "48db1405da5e4f3bcb3a64627025ab819287ba558e5a8b8291bef58e6236ff2a",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "80488ffac112542b1298cc6abb60cae693324c0fa52d34d815539eb2542c49ae",
+        "sigRevSha256": "b629c5507c66a3f34094014e8c7cf842b1d48ca75d170532c26443b720e7fb14",
+        "cmsSha256": "c75b619e7f3a936f5958bebd3d4f3d0c34b4d150b6d6668a823ad86fc0fc81e4",
+        "placement": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "overlap"
+        }
       }
     },
     {

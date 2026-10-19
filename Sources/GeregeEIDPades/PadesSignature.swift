@@ -33,6 +33,8 @@ enum PadesSignature {
         let digest: [UInt8]
         /// The new field's /T ("Signature k").
         let fieldName: String
+        /// The visible stamp's final position (nil for an invisible signature) — PLACEMENT_SPEC.md.
+        var placement: StampPlacement.Result? = nil
     }
 
     /// Writes an invisible approval signature revision after `base`: /Sig dictionary with a zeroed placeholder,
@@ -79,13 +81,21 @@ enum PadesSignature {
 
         // ── field + widget ──
         let page: Page?
+        var placement: StampPlacement.Result?
         if let vis = visible {
             guard nameHex != nil, signerName.trimmingCharacters(in: .whitespacesAndNewlines) == vis.name else {
                 throw Appearance.Failure("/Name would not be written")
             }
             guard let p = try Appearance.nthPage(r, root["Pages"], vis.page) else { throw Appearance.Failure("page \(vis.page) missing") }
             let (box, rot) = try Appearance.geometry(r, p.dict)
-            let rect = try Appearance.rect(box: box, rot: rot, x: vis.x, y: vis.y, w: vis.w, h: vis.h)
+            var rect = try Appearance.rect(box: box, rot: rot, x: vis.x, y: vis.y, w: vis.w, h: vis.h)
+            // PLACEMENT_SPEC.md: move off existing page content; the requested rect stays when nothing is free.
+            let placed = StampPlacement.choose(r, page: p.dict, pageID: p.ref.id, box: box, rot: rot,
+                                          x: vis.x, y: vis.y, w: vis.w, h: vis.h)
+            if placed.status == .moved {
+                rect = try Appearance.rect(box: box, rot: rot, x: placed.x, y: placed.y, w: vis.w, h: vis.h)
+            }
+            placement = placed
             let bodies = try Appearance.objects(Appearance.Params(w: vis.w, h: vis.h, rotate: rot, name: vis.name, role: vis.role,
                                                                   lang: vis.lang, date: vis.date, url: vis.url), ids: apIDs)
             inc.writeObject(fieldID, Appearance.widget(fieldName: fieldName, rect: rect, page: p.ref, sigID: sigID, formID: apIDs[0]))
@@ -124,7 +134,7 @@ enum PadesSignature {
         let field = "[\(br[0]) \(br[1]) \(br[2]) \(br[3])]"
         guard field.utf8.count <= byteRangeWidth else { throw Failure.byteRangeMismatch }
         doc.replaceSubrange((sigStart + brAt)..<(sigStart + brAt + field.utf8.count), with: Array(field.utf8))
-        return Prepared(pdf: doc, byteRange: br, digest: digest(doc, br), fieldName: fieldName)
+        return Prepared(pdf: doc, byteRange: br, digest: digest(doc, br), fieldName: fieldName, placement: placement)
     }
 
     /// SHA-256 over the two ByteRange spans.
