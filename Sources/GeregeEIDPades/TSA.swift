@@ -139,16 +139,26 @@ enum TSA {
         c.extKeyUsageCritical && c.extKeyUsage == [OID.kpTimeStamping]
     }
 
-    /// `leaf` chains (subject/issuer + signature, validity at `at`) to one of `roots` through `pool`.
+    /// `leaf` chains to one of `roots` through `pool` — Go `x509.Verify` (verifyTSAChain, KeyUsages timeStamping):
+    /// subject/issuer + signature, every certificate valid at `at`, each issuer a CA allowed to sign certificates
+    /// (cA + keyCertSign; intermediates must carry basicConstraints), pathLenConstraint and the EKU of every issuer
+    /// (empty, anyExtendedKeyUsage or timeStamping).
     static func chainsToRoot(_ leaf: X509Cert, pool: [X509Cert], roots: [X509Cert], at: Date) -> Bool {
+        func ekuOK(_ c: X509Cert) -> Bool {
+            c.extKeyUsage.isEmpty || c.extKeyUsage.contains(OID.anyExtendedKeyUsage) || c.extKeyUsage.contains(OID.kpTimeStamping)
+        }
         var cur = leaf
+        var below = 0  // CA certificates between the leaf and the next issuer (Go numIntermediates)
         for _ in 0..<8 {
-            guard cur.notBefore <= at, at <= cur.notAfter else { return false }
-            if let r = roots.first(where: { cur.isSigned(by: $0) }) {
-                return r.notBefore <= at && at <= r.notAfter
+            guard cur.validAt(at) else { return false }
+            if roots.contains(where: { cur.isSigned(by: $0) && $0.validAt(at) && $0.allowsPath(below: below) && ekuOK($0) }) {
+                return true
             }
-            guard let next = pool.first(where: { $0 != cur && cur.isSigned(by: $0) }) else { return false }
+            guard let next = pool.first(where: {
+                $0 != cur && cur.isSigned(by: $0) && $0.basicConstraintsValid && $0.isCA && $0.allowsPath(below: below) && ekuOK($0)
+            }) else { return false }
             cur = next
+            below += 1
         }
         return false
     }

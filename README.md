@@ -15,7 +15,7 @@
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.2.0")
+    .package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.3.0")
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -40,8 +40,9 @@ let prepared = try EidPades.prepare(pdf: pdf, options: .init(signerCert: signCer
 // 2) TSA + OCSP/CRL + DSS
 let done = try await EidPades.complete(state: prepared.state, signature: sig)
 // done.pdf, done.cms, done.docId, done.outSha256, done.inSha256, done.hasPage, done.pageSha256,
-// done.revIndex, done.sigRevSha256, done.priorCmsSha256, done.signerCert
-// → RP backend нь гарын үсгийг eID-д бүртгэнэ (POST /pdf/signatures)
+// done.revIndex, done.sigRevSha256, done.priorCmsSha256, done.signerCert, done.fileName
+let body = try JSONEncoder().encode(done.registration(medium: .phone, sessionId: sessionID))
+// → RP backend нь body-г eID-д ЯГ ХЭВЭЭР бүртгэнэ (POST /pdf/signatures)
 ```
 
 - `prepare`: урьдчилсан шалгуур (шифрлэлт, DocMDP P=1, өмнөх гарын үсэг, ≤ 16), эхний eID гарын үсэгт
@@ -52,6 +53,7 @@ let done = try await EidPades.complete(state: prepared.state, signature: sig)
 - `CompleteOptions.transport` — өөрийн HTTP (proxy, sandbox); анхдагч нь URLSession (10 с, redirect-гүй, ≤ 4 MiB).
 - Алдаа: `EidPadesError.code` — бүх SDK-д ижил тогтвортой код (`PDF_INVALID`, `PDF_ENCRYPTED`, `PDF_LOCKED`,
   `PDF_FOREIGN_SIGNATURE`, `SIGNATURE_INVALID`, `TSA_UNAVAILABLE`, `LTV_UNAVAILABLE`, `STATE_INVALID`, …).
+  `retryable` — TSA/LTV түр алдаа; `certificateRevoked` — гинжийн гэрчилгээ цуцлагдсан (эцсийн).
 - Бүрэн validator энэ санд байхгүй — шалгалтыг backend-д Go SDK-ээр хийнэ.
 
 Интеграцийн баримт: <https://developer.eidmongolia.mn>.
@@ -84,5 +86,5 @@ and returns a 32-byte DTBS to be signed by the citizen's phone or USB token; `co
 RFC 3161 timestamp, OCSP/CRL and DSS (PAdES B-LT). Output is byte-identical to the Go reference
 (`gerege-systems/eid-mongolia-sdk-go`, profile `pades-client/1`), enforced by golden vectors in CI.
 iOS 14+ / macOS 13+, no third-party dependencies. Install via SwiftPM:
-`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.2.0")` (use the latest tag), product
+`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.3.0")` (use the latest tag), product
 `GeregeEIDPades`. This repository is a read-only mirror; please file issues here.

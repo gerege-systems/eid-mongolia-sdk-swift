@@ -18,6 +18,12 @@ fetch() { # $1 = ref → $2 = dir (golden copy, keys stripped)
   tmp=$(mktemp -d)
   curl -fsSL "https://codeload.github.com/$GO_REPO/tar.gz/$ref" | tar -xz -C "$tmp" --strip-components=1
   cp -R "$tmp/pades/testdata/golden" "$out"
+  # golden v4 (Go validate/): DSS-ийн цуцлалтын нотолгооны тохирол/шинэлэг байдал ба гүн давхарлалтын оролт —
+  # native тест complete-ийн OCSP/CRL дүрэм ба PRECHECKS #2a-г эдгээрээр шалгана.
+  if [ -d "$tmp/pades/testdata/validate/input" ]; then
+    mkdir -p "$out/validate"
+    cp "$tmp"/pades/testdata/validate/input/dss-*.pdf "$tmp"/pades/testdata/validate/input/deep-nesting*.pdf "$out/validate/"
+  fi
   rm -rf "$tmp"
   # Гаралтын PDF (output/) ба desktop/ нь sha256-аар тулгагдана — репод хуулахгүй.
   rm -rf "$out/output" "$out/desktop"

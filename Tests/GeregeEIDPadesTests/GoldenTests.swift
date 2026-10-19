@@ -172,6 +172,7 @@ final class GoldenTests: XCTestCase {
                 let prev = c.input.hasPrefix("case:") ? m.cases.first { $0.name == String(c.input.dropFirst(5)) } : nil
                 XCTAssertEqual(done.priorRevisionSha256, prev.flatMap { $0.expect.sigRevSha256 }.map { [$0] } ?? [], "\(c.name) priorRevision")
                 XCTAssertEqual(done.signerCert, citizen, c.name)
+                try checkRegistration(done, c)
                 outputs[c.name] = done.pdf
                 full += 1
             } catch let e as EidPadesError {
@@ -182,5 +183,30 @@ final class GoldenTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(m.cases.filter { $0.prepare.appearance != nil }.count, 5)
         XCTAssertEqual(full, m.cases.filter { $0.expect.error == nil }.count, "every non-error case must complete byte-identically")
         XCTAssertTrue(skipped.isEmpty)
+    }
+
+    /// `Completed.registration` = Go `pades.Registration`: fileName from prepare, pageSha256 only for revIndex 1, prior
+    /// signatures only as priorCmsSha256 (never also as priorRevisionSha256 — the CA answers 400), signerEtsi.
+    func checkRegistration(_ done: EidPades.Completed, _ c: Case) throws {
+        XCTAssertEqual(done.fileName, c.prepare.fileName.flatMap(EidPades.cleanFileName), c.name)
+        guard done.fileName != nil, done.revIndex > 1 || done.hasPage else {
+            XCTAssertThrowsError(try done.registration(medium: .token), c.name)
+            return
+        }
+        let r = try done.registration(medium: .phone, sessionId: "00000000-0000-4000-8000-000000000001")
+        XCTAssertEqual(r.docID, done.docId, c.name)
+        XCTAssertEqual(r.revIndex, done.revIndex, c.name)
+        XCTAssertEqual(r.fileName, done.fileName, c.name)
+        XCTAssertEqual(r.cms, done.cms.base64EncodedString(), c.name)
+        XCTAssertEqual(r.pageSha256, done.revIndex == 1 ? done.pageSha256 : nil, c.name)
+        XCTAssertEqual(r.priorCmsSha256, done.priorCmsSha256.isEmpty ? nil : done.priorCmsSha256, c.name)
+        XCTAssertNil(r.priorRevisionSha256, c.name)
+        XCTAssertEqual(r.priorSignatures.map(\.revisionSha256), done.priorRevisionSha256, c.name)
+        XCTAssertEqual(r.signerEtsi, "PNOMN-00000000000", c.name)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(r)) as? [String: Any])
+        XCTAssertEqual(Set(json.keys), Set(["docID", "revIndex", "medium", "sessionID", "cms", "fileName", "inSha256",
+                                            "sigRevSha256", "outSha256", "signerEtsi"]
+                                           + (done.revIndex == 1 ? ["pageSha256"] : ["priorCmsSha256"])), c.name)
+        XCTAssertEqual(json["medium"] as? String, "phone")
     }
 }

@@ -25,6 +25,17 @@ struct X509Cert: Equatable {
     let extKeyUsage: [String]
     let extKeyUsageCritical: Bool
     let subjectAttrs: [(oid: String, value: String)]
+    /// Go `Version` (1…3), `BasicConstraintsValid`, `IsCA`, `MaxPathLen` (nil = no limit), `KeyUsage` (bit i = 1 << i),
+    /// `SubjectKeyId`.
+    let version: Int
+    let basicConstraintsValid: Bool
+    let isCA: Bool
+    let maxPathLen: Int?
+    let keyUsage: Int
+    let subjectKeyId: [UInt8]
+
+    static let keyUsageCertSign = 1 << 5
+    static let keyUsageCRLSign = 1 << 6
 
     static func == (a: X509Cert, b: X509Cert) -> Bool { a.raw == b.raw }
 
@@ -60,7 +71,14 @@ struct X509Cert: Equatable {
         signature = Array(sigBits.dropFirst())
 
         var f = try tbsE.children()
-        if f.first?.tag == 0xA0 { f.removeFirst() } // version
+        var v = 1
+        if f.first?.tag == 0xA0 {                     // version
+            let n = try f[0].child(0).expect(0x02).unsignedInteger
+            guard n.count == 1, n[0] <= 2 else { throw DERError("certificate version") }
+            v = Int(n[0]) + 1
+            f.removeFirst()
+        }
+        version = v
         guard f.count >= 6 else { throw DERError("tbsCertificate shape") }
         serial = try f[0].expect(0x02).contents
         rawIssuer = try f[2].expect(0x30).bytes
@@ -87,6 +105,7 @@ struct X509Cert: Equatable {
 
         var ocsp: [String] = [], crl: [String] = [], eku: [String] = []
         var ekuCritical = false
+        var bcValid = false, ca = false, pathLen: Int?, ku = 0, ski: [UInt8] = []
         if let extWrap = f.first(where: { $0.tag == 0xA3 }) {
             for ext in try extWrap.child(0).children() {
                 let p = try ext.children()
@@ -114,6 +133,25 @@ struct X509Cert: Equatable {
                 case OID.extKeyUsage:
                     eku = try inner.children().compactMap(\.oid)
                     ekuCritical = critical
+                case OID.basicConstraints:
+                    // BasicConstraints { cA BOOLEAN DEFAULT FALSE, pathLenConstraint INTEGER OPTIONAL }
+                    bcValid = true
+                    for e in try inner.expect(0x30).children() {
+                        if e.tag == 0x01 { ca = e.value.first.map { $0 != 0 } ?? false }
+                        if e.tag == 0x02 {
+                            let n = e.unsignedInteger
+                            guard e.value.first.map({ $0 & 0x80 == 0 }) ?? false, n.count <= 4 else {
+                                throw DERError("basicConstraints pathLen")
+                            }
+                            pathLen = n.reduce(0) { $0 << 8 | Int($1) }
+                        }
+                    }
+                case OID.keyUsage:
+                    // Go: bit i of the BIT STRING (MSB first) → KeyUsage 1 << i, i < 9.
+                    let bits = Array(try inner.expect(0x03).value.dropFirst())
+                    for i in 0..<9 where i / 8 < bits.count && bits[i / 8] & (0x80 >> UInt8(i % 8)) != 0 { ku |= 1 << i }
+                case OID.subjectKeyId:
+                    ski = try inner.expect(0x04).contents
                 default:
                     break
                 }
@@ -123,6 +161,11 @@ struct X509Cert: Equatable {
         crlDistributionPoints = crl
         extKeyUsage = eku
         extKeyUsageCritical = ekuCritical
+        basicConstraintsValid = bcValid
+        isCA = ca
+        maxPathLen = ca ? pathLen : nil
+        keyUsage = ku
+        subjectKeyId = ski
     }
 
     /// Security.framework public key.
@@ -136,9 +179,34 @@ struct X509Cert: Equatable {
     /// EC key size in bytes (P-256 → 32), from the uncompressed point length.
     var ecFieldBytes: Int { (publicKeyBits.count - 1) / 2 }
 
-    /// `self` was signed by `issuer` (Go `CheckSignatureFrom` minus the CA/basic-constraints checks).
+    /// `self` was signed by `issuer` (Go `bytes.Equal(RawIssuer, issuer.RawSubject) && CheckSignatureFrom(issuer)`):
+    /// the issuer must be a CA allowed to sign certificates (basicConstraints cA, keyUsage keyCertSign when present).
     func isSigned(by issuer: X509Cert) -> Bool {
-        rawIssuer == issuer.rawSubject && Crypto.verify(alg: sigAlgorithm, key: issuer, data: tbs, signature: signature)
+        rawIssuer == issuer.rawSubject && issuer.mayIssue(Self.keyUsageCertSign)
+            && Crypto.verify(alg: sigAlgorithm, key: issuer, data: tbs, signature: signature)
+    }
+
+    /// Go `CheckSignatureFrom` / `RevocationList.CheckSignatureFrom` parent checks: a v3 certificate needs
+    /// basicConstraints with cA = true (v1/v2 without the extension are accepted, like Go); a keyUsage extension, when
+    /// present and non-empty, must include `usage` (keyCertSign for certificates, cRLSign for CRLs).
+    func mayIssue(_ usage: Int) -> Bool {
+        if version == 3 && !basicConstraintsValid || basicConstraintsValid && !isCA { return false }
+        return keyUsage == 0 || keyUsage & usage != 0
+    }
+
+    /// Go `Verify` path-length rule: `intermediates` CA certificates below this one in the chain.
+    func allowsPath(below intermediates: Int) -> Bool {
+        guard basicConstraintsValid, let max = maxPathLen else { return true }
+        return intermediates <= max
+    }
+
+    func validAt(_ t: Date) -> Bool { notBefore <= t && t <= notAfter }
+
+    /// Serial in lower-case hex without leading zeros (Go `SerialNumber.Text(16)`) — errors name certificates by
+    /// serial, never by CN (the citizen's name is PII).
+    var serialRef: String {
+        let h = Crypto.hex(DER.minimal(serial)).drop { $0 == "0" }
+        return "serial " + (h.isEmpty ? "0" : String(h))
     }
 }
 

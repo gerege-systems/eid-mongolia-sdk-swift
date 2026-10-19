@@ -84,10 +84,8 @@ enum Prechecks {
         return out
     }
 
-    /// /Encrypt reference in the raw bytes (readers that cannot open AES-256 files).
-    static func encryptedByScan(_ doc: [UInt8]) -> Bool {
-        String(decoding: doc, as: UTF8.self).range(of: #"/Encrypt\s+\d+\s+\d+\s+R"#, options: .regularExpression) != nil
-    }
+    /// /Encrypt reference or direct dictionary in the raw bytes (readers that cannot open AES-256 files) — PRECHECKS #4.
+    static func encryptedByScan(_ doc: [UInt8]) -> Bool { Structure.hasEncryptRef(doc) }
 
     /// docId from the first eID signature's verification page (/Link /URI https://ca.eidmongolia.mn/verify/<uuid>).
     static func docIDFromPage(_ doc: [UInt8]) -> String? {

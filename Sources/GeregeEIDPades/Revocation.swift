@@ -98,29 +98,121 @@ enum OCSP {
         guard let c = r.certificate, c != issuer else { return true }
         return c.extKeyUsage.contains(OID.kpOCSPSigning)
     }
+
+    /// Go `validate.OCSPCertIDMatches`: every SingleResponse for `cert`'s serial carries `issuer`'s CertID
+    /// (issuerNameHash = H(issuer subject), issuerKeyHash = H(issuer subjectPublicKey); SHA-1/256/384/512) and there is
+    /// at least one. `parse` selects by serial only, so a response for another issuer's certificate with the same
+    /// serial (even from the same responder) must not count for this certificate.
+    static func certIDMatches(_ der: [UInt8], cert: X509Cert, issuer: X509Cert) -> Bool {
+        guard let top = try? DER.parse(der), top.tag == 0x30, let f = try? top.children(), f.count == 2,
+              f[0].tag == 0x0A, f[0].contents == [0], let rb = try? f[1].expect(0xA0).child(0),
+              let octets = try? rb.child(1).expect(0x04), let basic = try? DER.parse(octets.value),
+              basic.tag == 0x30, var t = try? basic.child(0).children() else { return false }
+        if t.first?.tag == 0xA0 { t.removeFirst() }             // version
+        guard t.count >= 3, t[2].tag == 0x30, let singles = try? t[2].children() else { return false }
+        let serial = DER.minimal(cert.serial)
+        var found = false
+        for single in singles {
+            guard let cid = try? single.child(0).children(), cid.count == 4, cid[1].tag == 0x04, cid[2].tag == 0x04,
+                  cid[3].tag == 0x02, let alg = try? cid[0].child(0).oid else { return false }
+            guard cid[3].unsignedInteger == serial else { continue }
+            guard [OID.sha1, OID.sha256, OID.sha384, OID.sha512].contains(alg),
+                  let nameHash = Crypto.digest(alg, issuer.rawSubject), let keyHash = Crypto.digest(alg, issuer.publicKeyBits),
+                  cid[1].contents == nameHash, cid[2].contents == keyHash else { return false }
+            found = true
+        }
+        return found
+    }
+}
+
+/// Freshness of revocation evidence — Go `validate.FreshAt` (README §7.2, golden validate/v4).
+enum Revocation {
+    /// thisUpdate may be at most this long before the check time when nextUpdate does not cover it.
+    static let maxAge: TimeInterval = 24 * 3600
+    /// Responder ↔ checker clock tolerance.
+    static let clockSkew: TimeInterval = 5 * 60
+
+    /// A response with thisUpdate/nextUpdate is "good" evidence at `at` (the check time — the timestamp time, else now):
+    /// thisUpdate not after now + skew; nextUpdate (when present) not before at − skew; thisUpdate ≥ at − 24 h, or
+    /// [thisUpdate, nextUpdate] covers `at`. Not applied to "revoked" (a revocation does not expire).
+    static func freshAt(thisUpdate: Date, nextUpdate: Date?, at: Date, now: Date) -> Bool {
+        if thisUpdate > now.addingTimeInterval(clockSkew) { return false }
+        if let n = nextUpdate, n < at.addingTimeInterval(-clockSkew) { return false }
+        if thisUpdate >= at.addingTimeInterval(-maxAge) { return true }
+        return nextUpdate != nil && thisUpdate <= at
+    }
+}
+
+/// A chain certificate is revoked by its issuer-signed OCSP response or CRL (Go `pades.ErrCertificateRevoked`).
+struct CertificateRevoked: Error, CustomStringConvertible {
+    let ref: String
+    var description: String { "certificate revoked (" + ref + ")" }
 }
 
 enum CRL {
-    /// Go `crlCovers`: `der` is a CRL of `c`'s issuer (signature checked), nextUpdate present and not past,
-    /// `c` not listed.
-    static func covers(_ der: [UInt8], cert c: X509Cert, issuer: X509Cert, now: Date) -> Bool {
+    struct Parsed {
+        let rawIssuer: [UInt8]
+        let authorityKeyId: [UInt8]
+        let thisUpdate: Date
+        let nextUpdate: Date?
+        /// Revoked serials (unsigned magnitude, leading zeros removed).
+        let revoked: [[UInt8]]
+        let tbs: [UInt8]
+        let sigAlg: String
+        let signature: [UInt8]
+    }
+
+    /// CertificateList { tbsCertList, signatureAlgorithm, signature } (RFC 5280 §5.1).
+    static func parse(_ der: [UInt8]) -> Parsed? {
         guard let top = try? DER.parse(der), top.tag == 0x30, top.raw.count == der.count,
-              let f = try? top.children(), f.count == 3,
+              let f = try? top.children(), f.count == 3, f[0].tag == 0x30,
               let sigAlg = try? f[1].child(0).oid, f[2].tag == 0x03, f[2].value.first == 0,
-              var t = try? f[0].children() else { return false }
-        let tbs = f[0].bytes
-        let signature = Array(f[2].value.dropFirst())
+              var t = try? f[0].children() else { return nil }
         if t.first?.tag == 0x02 { t.removeFirst() }               // version
-        guard t.count >= 3, t[1].bytes == c.rawIssuer,
-              Crypto.verify(alg: sigAlg, key: issuer, data: tbs, signature: signature) else { return false }
-        guard t.count >= 4, let next = t[3].time, next >= now else { return false }
-        if t.count >= 5, t[4].tag == 0x30, let revoked = try? t[4].children() {
-            let serial = DER.minimal(c.serial)
-            for entry in revoked {
-                if let s = try? entry.child(0), s.tag == 0x02, s.unsignedInteger == serial { return false }
+        guard t.count >= 3, t[1].tag == 0x30, let thisUpdate = t[2].time else { return nil }
+        var i = 3
+        var next: Date?
+        if i < t.count, t[i].tag == 0x17 || t[i].tag == 0x18 {
+            guard let n = t[i].time else { return nil }
+            next = n
+            i += 1
+        }
+        var revoked: [[UInt8]] = []
+        if i < t.count, t[i].tag == 0x30 {
+            guard let entries = try? t[i].children() else { return nil }
+            for e in entries {
+                guard let s = try? e.child(0), s.tag == 0x02 else { return nil }
+                revoked.append(s.unsignedInteger)
+            }
+            i += 1
+        }
+        var aki: [UInt8] = []
+        if i < t.count, t[i].tag == 0xA0, let exts = try? t[i].child(0).children() {
+            for ext in exts {
+                guard let p = try? ext.children(), p.first?.oid == OID.authorityKeyId, let v = p.last, v.tag == 0x04,
+                      let seq = try? DER.parse(v.value), let parts = try? seq.children() else { continue }
+                if let kid = parts.first(where: { $0.tag == 0x80 }) { aki = kid.contents }
             }
         }
-        return true
+        return Parsed(rawIssuer: t[1].bytes, authorityKeyId: aki, thisUpdate: thisUpdate, nextUpdate: next,
+                      revoked: revoked, tbs: f[0].bytes, sigAlg: sigAlg, signature: Array(f[2].value.dropFirst()))
+    }
+
+    /// Go `validate.CRLFor`: the CRL of `cert`'s issuer — CRL issuer = cert issuer = issuer subject (raw bytes), AKI
+    /// (when both present) = the issuer's SKI, signed by the issuer (a CA allowed to sign CRLs).
+    static func isFor(_ crl: Parsed, cert: X509Cert, issuer: X509Cert) -> Bool {
+        guard crl.rawIssuer == cert.rawIssuer, crl.rawIssuer == issuer.rawSubject else { return false }
+        if !crl.authorityKeyId.isEmpty, !issuer.subjectKeyId.isEmpty, crl.authorityKeyId != issuer.subjectKeyId { return false }
+        return issuer.mayIssue(X509Cert.keyUsageCRLSign)
+            && Crypto.verify(alg: crl.sigAlg, key: issuer, data: crl.tbs, signature: crl.signature)
+    }
+
+    /// Go `crlCovers`: `der` is a CRL of `c`'s issuer with a nextUpdate, fresh now (`Revocation.freshAt`), `c` not
+    /// listed. Throws `CertificateRevoked` when `c` is listed in its issuer's CRL.
+    static func covers(_ der: [UInt8], cert c: X509Cert, issuer: X509Cert, now: Date) throws -> Bool {
+        guard let crl = parse(der), isFor(crl, cert: c, issuer: issuer) else { return false }
+        if crl.revoked.contains(DER.minimal(c.serial)) { throw CertificateRevoked(ref: c.serialRef) }
+        return crl.nextUpdate != nil && Revocation.freshAt(thisUpdate: crl.thisUpdate, nextUpdate: crl.nextUpdate, at: now, now: now)
     }
 }
 

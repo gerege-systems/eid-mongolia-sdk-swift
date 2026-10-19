@@ -119,7 +119,9 @@ public enum EidPades {
         }
     }
 
-    /// Signed document + the values the RP backend registers with the CA (`RegisterSignature` → POST /pdf/signatures).
+    /// Signed document + the values the CA registry needs: `registration(medium:sessionId:onBehalfOf:)` builds the
+    /// body the RP backend posts to `POST /pdf/signatures` (Go `pades.Registration` → `Client.PDF.RegisterSignature`,
+    /// TS `registrationFromCompleted` → `registerSignature`).
     public struct Completed: Sendable, Equatable {
         public let pdf: Data
         /// CMS DER embedded in /Contents.
@@ -144,6 +146,8 @@ public enum EidPades {
         public let priorRevisionSha256: [String]
         /// Citizen SIGN certificate (DER).
         public let signerCert: Data
+        /// `PrepareOptions.fileName` as cleaned by prepare (CA `cleanFileName`); nil when not given or invalid.
+        public let fileName: String?
     }
 
     // MARK: - prepare
@@ -153,6 +157,9 @@ public enum EidPades {
         let doc = [UInt8](pdf)
         guard doc.count <= maxInputBytes else { throw EidPadesError(code: .pdfTooLarge, message: "PDF exceeds 9.75 MB") }
         guard doc.starts(with: Array("%PDF-".utf8)) else { throw EidPadesError(code: .pdfInvalid, message: "not a PDF") }
+        do { try Structure.check(doc) } catch {
+            throw EidPadesError(code: .pdfInvalid, message: "PDF structure nested too deep or too complex")
+        }
         let cert: X509Cert
         do { cert = try X509Cert(der: [UInt8](o.signerCert)) } catch {
             throw EidPadesError(code: .signerInvalid, message: "signerCert: \(error)")
@@ -168,6 +175,7 @@ public enum EidPades {
         try checkAppearance(o)
         let now = o.signingTime ?? Date()
         let inHex = Crypto.hex(Crypto.sha256(doc))
+        let fileName = cleanFileName(o.fileName ?? "")
 
         let (newDoc, revIndex) = try Prechecks.inspect(doc, issuers: EidChain.issuers + [chain[0]])
         var docID = o.docId ?? ""
@@ -177,12 +185,14 @@ public enum EidPades {
             }
             docID = fromPage
         }
-        if newDoc, docID.isEmpty { docID = randomUUID() }
+        if newDoc, docID.isEmpty {
+            do { docID = try randomUUID() } catch { throw EidPadesError(code: .internal, message: "uuid: \(error)") }
+        }
         let hasPage = newDoc && o.verifyPage
         var base = doc
         var pageHex = ""
         if hasPage {
-            guard let fileName = cleanFileName(o.fileName ?? "") else {
+            guard let fileName else {
                 throw EidPadesError(code: .requestInvalid, message: "fileName required, ≤ 120 characters")
             }
             do {
@@ -220,7 +230,7 @@ public enum EidPades {
         let st = State(docId: docID, signerCert: cert.raw, chain: chain.map(\.raw), signedAttrs: attrs,
                        byteRange: prep.byteRange, revIndex: revIndex, inSha256: inHex, hasPage: hasPage,
                        pageSha256: pageHex.isEmpty ? nil : pageHex, claimedRole: o.claimedRole?.nilIfEmpty,
-                       preparedSha256: Crypto.hex(Crypto.sha256(prep.pdf)), pdf: prep.pdf)
+                       fileName: fileName, preparedSha256: Crypto.hex(Crypto.sha256(prep.pdf)), pdf: prep.pdf)
         return Prepared(dtbs: Data(CMS.dtbs(attrs)), digest: Data(prep.digest), docId: docID, state: Data(try st.encode()))
     }
 
@@ -233,6 +243,9 @@ public enum EidPades {
         let st: State
         do { st = try State.decode([UInt8](state)) } catch {
             throw EidPadesError(code: .stateInvalid, message: "state: \(error)")
+        }
+        do { try Structure.check(st.pdf) } catch {
+            throw EidPadesError(code: .stateInvalid, message: "state PDF structure nested too deep or too complex")
         }
         let cert: X509Cert, chain: [X509Cert]
         do {
@@ -275,6 +288,8 @@ public enum EidPades {
         do {
             dss = try await LTV.collectWithWait(f, now: now, sleep: sleep, genTime: ts.genTime, roots: roots,
                                                 chains: [[cert] + chain, ts.certificates])
+        } catch let e as CertificateRevoked {
+            throw EidPadesError(code: .ltvUnavailable, message: e.description, certificateRevoked: true)
         } catch {
             throw EidPadesError(code: .ltvUnavailable, message: "OCSP/CRL: \(error)")
         }
@@ -286,13 +301,49 @@ public enum EidPades {
             throw EidPadesError(code: .selfValidationFailed, message: "DSS revision: \(error)")
         }
         guard out.count <= maxOutputBytes else { throw EidPadesError(code: .pdfTooLarge, message: "output exceeds 10 MiB") }
-        let prior = Prechecks.priorSignatures(signed, excluding: st.byteRange)
+        let prior = try selfCheck(out, signed: signed, cms: cms, state: st)
         return Completed(pdf: Data(out), cms: Data(cms), docId: st.docId, outSha256: Crypto.hex(Crypto.sha256(out)),
                          inSha256: st.inSha256, hasPage: st.hasPage, pageSha256: st.pageSha256, revIndex: st.revIndex,
                          sigRevSha256: Crypto.hex(Crypto.sha256(signed)),
                          priorCmsSha256: prior.map { Crypto.hex(Crypto.sha256($0.cms)) },
                          priorRevisionSha256: prior.map { Crypto.hex(Crypto.sha256(Array(signed[0..<$0.end]))) },
-                         signerCert: Data(cert.raw))
+                         signerCert: Data(cert.raw), fileName: st.fileName)
+    }
+
+    /// Light self-check of the output (no full validator — Go runs the CA validator here): the document parses, its
+    /// signature count is `revIndex`, the final Catalog has /DSS, and the new signature is the one prepared — same
+    /// ByteRange, its /Contents is exactly `cms`, it covers the whole signature revision (`signed`, which `out`
+    /// extends unchanged) and verifies (messageDigest over the ByteRange, signature over signedAttrs). Returns the
+    /// prior signatures (CMS DER, revision end) in object order.
+    static func selfCheck(_ out: [UInt8], signed: [UInt8], cms: [UInt8], state st: State) throws -> [(cms: [UInt8], end: Int)] {
+        func fail(_ m: String) -> EidPadesError { EidPadesError(code: .selfValidationFailed, message: "output self-check: " + m) }
+        guard out.count > signed.count, out.starts(with: signed), st.byteRange[2] + st.byteRange[3] == signed.count else {
+            throw fail("the signature does not cover its revision")
+        }
+        let r: PdfReader
+        do { r = try PdfReader(out) } catch { throw fail("output does not parse") }
+        guard let root = (try? r.resolve(r.trailer["Root"]))?.dict, (try? r.resolve(root["DSS"]))?.dict != nil else {
+            throw fail("no /DSS")
+        }
+        var prior: [(cms: [UInt8], end: Int)] = []
+        var found = false
+        var count = 0
+        for d in Prechecks.signatureDicts(r) {
+            if let t = (try? r.resolve(d["Type"]))?.nameValue, t != "Sig" { continue }
+            count += 1
+            guard let arr = (try? r.resolve(d["ByteRange"]))?.array else { throw fail("signature without /ByteRange") }
+            let br = arr.compactMap { (try? r.resolve($0))?.intValue }.map(Int.init)
+            if br == st.byteRange {
+                guard !found, GeregeEIDPades.PriorSignature.contentsDER(out, br) == cms, GeregeEIDPades.PriorSignature(d, reader: r, doc: out) != nil else {
+                    throw fail("the new signature does not verify")
+                }
+                found = true
+            } else if let der = GeregeEIDPades.PriorSignature.contentsDER(out, br), br.count == 4, br[2] + br[3] <= out.count {
+                prior.append((der, br[2] + br[3]))
+            }
+        }
+        guard found, count == st.revIndex else { throw fail("signature count \(count), want \(st.revIndex)") }
+        return prior
     }
 
     // MARK: - Helpers
@@ -382,14 +433,15 @@ public enum EidPades {
         s.range(of: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", options: .regularExpression) != nil
     }
 
-    static func randomBytes(_ n: Int) -> [UInt8] {
+    static func randomBytes(_ n: Int) throws -> [UInt8] {
         var b = [UInt8](repeating: 0, count: n)
-        _ = SecRandomCopyBytes(kSecRandomDefault, n, &b)
+        let rc = SecRandomCopyBytes(kSecRandomDefault, n, &b)
+        guard rc == errSecSuccess else { throw DERError("SecRandomCopyBytes failed (\(rc))") }
         return b
     }
 
-    static func randomUUID() -> String {
-        var b = randomBytes(16)
+    static func randomUUID() throws -> String {
+        var b = try randomBytes(16)
         b[6] = b[6] & 0x0F | 0x40
         b[8] = b[8] & 0x3F | 0x80
         let h = Crypto.hex(b)

@@ -27,6 +27,9 @@ reference-тэй **ижил байт** гаргаж байгааг шалган�
   `input/quartz-rotated90.pdf` = `qpdf --rotate=+90:1 --deterministic-id quartz-pdf13.pdf`). `prepare.appearance` —
   options-д. Шинэ тохиолдлын TSA хариу `http/17…21`; хуучин fixture-ийн нэр/байт хэвээр (`-update` нь байгаа түлхүүрийг
   дахин тоглуулна — OCSP `producedAt` цагаас хамаардаг тул).
+- **v4** (`pades-golden-v4`): энэ хавтасны бүх тохиолдол v3-тай байт-ижил (prepare/complete-ийн зан өөрчлөгдөөгүй);
+  шинэ тохиолдлууд нь `../validate/` (цуцлалтын нотолгооны тохирол/шинэлэг байдал, гүн давхарласан PDF — тэндхийн README
+  «v4»). PRECHECKS.md #2a (давхарлалт > 256 → `PDF_INVALID`) нэмэгдсэн.
 - `ci/pyhanko_check.py` — гаралт бүрийг pyHanko-оор (CI job `golden-external`, qpdf `--check`-тэй хамт) шалгана.
 - `desktop/` — eid-desktop-ийн Swift port-ын хуучин (CA профайл, xref FlateDecode) гаралт; Go core-ийг xref stream-ийн
   өгөгдлийг задалж тулгана (`pades/internal/core/desktop_golden_test.go`).

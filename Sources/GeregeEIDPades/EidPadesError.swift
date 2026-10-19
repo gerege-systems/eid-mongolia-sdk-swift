@@ -27,11 +27,19 @@ public struct EidPadesError: Error, Equatable, Sendable, CustomStringConvertible
     public let code: Code
     /// Developer-facing detail (not for end users).
     public let message: String
+    /// `complete`: a chain certificate (citizen, issuer or TSA) is revoked by its issuer-signed OCSP response or CRL
+    /// (code `LTV_UNAVAILABLE`, Go `pades.ErrCertificateRevoked`). Final — retrying with the same state does not help.
+    public let certificateRevoked: Bool
 
-    public init(code: Code, message: String) {
+    public init(code: Code, message: String, certificateRevoked: Bool = false) {
         self.code = code
         self.message = message
+        self.certificateRevoked = certificateRevoked
     }
+
+    /// TSA_UNAVAILABLE / LTV_UNAVAILABLE (temporary — call `complete` again with the same state and signature), except a
+    /// revoked certificate.
+    public var retryable: Bool { !certificateRevoked && (code == .tsaUnavailable || code == .ltvUnavailable) }
 
     public var description: String { "\(code.rawValue): \(message)" }
 }

@@ -15,16 +15,19 @@ struct State: Codable {
     var hasPage: Bool
     var pageSha256: String?
     var claimedRole: String?
+    /// Cleaned document name for the CA registration (Go `prepState.FileName`).
+    var fileName: String?
     var preparedSha256: String
     var pdf: [UInt8] = []
 
     enum CodingKeys: String, CodingKey {
         case docId, signerCert, chain, signedAttrs, byteRange, revIndex, inSha256, hasPage, pageSha256, claimedRole,
-             preparedSha256
+             fileName, preparedSha256
     }
 
     init(docId: String, signerCert: [UInt8], chain: [[UInt8]], signedAttrs: [UInt8], byteRange: [Int], revIndex: Int,
-         inSha256: String, hasPage: Bool, pageSha256: String?, claimedRole: String?, preparedSha256: String, pdf: [UInt8]) {
+         inSha256: String, hasPage: Bool, pageSha256: String?, claimedRole: String?, fileName: String? = nil,
+         preparedSha256: String, pdf: [UInt8]) {
         self.docId = docId
         self.signerCert = signerCert
         self.chain = chain
@@ -35,6 +38,7 @@ struct State: Codable {
         self.hasPage = hasPage
         self.pageSha256 = pageSha256
         self.claimedRole = claimedRole
+        self.fileName = fileName
         self.preparedSha256 = preparedSha256
         self.pdf = pdf
     }
@@ -56,6 +60,7 @@ struct State: Codable {
         hasPage = try c.decode(Bool.self, forKey: .hasPage)
         pageSha256 = try c.decodeIfPresent(String.self, forKey: .pageSha256)
         claimedRole = try c.decodeIfPresent(String.self, forKey: .claimedRole)
+        fileName = try c.decodeIfPresent(String.self, forKey: .fileName)
         preparedSha256 = try c.decode(String.self, forKey: .preparedSha256)
     }
 
@@ -71,6 +76,7 @@ struct State: Codable {
         try c.encode(hasPage, forKey: .hasPage)
         try c.encodeIfPresent(pageSha256, forKey: .pageSha256)
         try c.encodeIfPresent(claimedRole, forKey: .claimedRole)
+        try c.encodeIfPresent(fileName, forKey: .fileName)
         try c.encode(preparedSha256, forKey: .preparedSha256)
     }
 

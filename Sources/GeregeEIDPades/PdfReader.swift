@@ -213,6 +213,17 @@ final class PdfReader {
         return .stream(d, start..<e)
     }
 
+    /// The dictionary of object `id` at `off` without resolving anything (no /Length lookup) and whether a stream
+    /// follows — for the object-stream graph check (`Structure.checkObjStmGraph`). nil when it does not parse.
+    func rawHeader(at off: Int, id: Int) -> (PdfDict, Bool)? {
+        guard off >= 0, off < bytes.count else { return nil }
+        var lx = PdfLexer(bytes, at: off)
+        guard Int(lx.word() ?? "") == id, Int(lx.word() ?? "") != nil, (try? lx.expect("obj")) != nil,
+              case .dict(let d)? = try? lx.parseObject() else { return nil }
+        lx.skipWhite()
+        return (d, lx.peekWord(at: lx.pos)?.0 == "stream")
+    }
+
     private static func endstreamFollows(_ b: [UInt8], at p: Int) -> Bool {
         var lx = PdfLexer(b, at: p)
         return lx.word() == "endstream"
