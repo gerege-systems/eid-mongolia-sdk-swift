@@ -208,7 +208,20 @@ final class GoldenTests: XCTestCase {
             XCTAssertThrowsError(try done.registration(medium: .token), c.name)
             return
         }
-        let r = try done.registration(medium: .phone, sessionId: "00000000-0000-4000-8000-000000000001")
+        let sid = "00000000-0000-4000-8000-000000000001"
+        let obo = done.claimedRole == nil ? nil : "NTRMN-1234567"
+        XCTAssertEqual(done.claimedRole, c.prepare.claimedRole?.nilIfEmptyForTest, c.name)
+        // medium inferred from sessionId (CA pairing); inconsistent pairs fail fast.
+        XCTAssertEqual(try done.registration(onBehalfOf: obo).medium, .token, c.name)
+        XCTAssertEqual(try done.registration(sessionId: sid, onBehalfOf: obo).medium, .phone, c.name)
+        XCTAssertThrowsError(try done.registration(medium: .phone, onBehalfOf: obo), c.name)
+        XCTAssertThrowsError(try done.registration(medium: .token, sessionId: sid, onBehalfOf: obo), c.name)
+        if done.claimedRole != nil {
+            XCTAssertThrowsError(try done.registration(sessionId: sid), c.name) { e in
+                XCTAssertEqual((e as? EidPadesError)?.code, .requestInvalid)
+            }
+        }
+        let r = try done.registration(medium: .phone, sessionId: sid, onBehalfOf: obo)
         XCTAssertEqual(r.docID, done.docId, c.name)
         XCTAssertEqual(r.revIndex, done.revIndex, c.name)
         XCTAssertEqual(r.fileName, done.fileName, c.name)
@@ -221,7 +234,12 @@ final class GoldenTests: XCTestCase {
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(r)) as? [String: Any])
         XCTAssertEqual(Set(json.keys), Set(["docID", "revIndex", "medium", "sessionID", "cms", "fileName", "inSha256",
                                             "sigRevSha256", "outSha256", "signerEtsi"]
-                                           + (done.revIndex == 1 ? ["pageSha256"] : ["priorCmsSha256"])), c.name)
+                                           + (done.revIndex == 1 ? ["pageSha256"] : ["priorCmsSha256"])
+                                           + (obo == nil ? [] : ["onBehalfOf"])), c.name)
         XCTAssertEqual(json["medium"] as? String, "phone")
     }
+}
+
+private extension String {
+    var nilIfEmptyForTest: String? { isEmpty ? nil : self }
 }

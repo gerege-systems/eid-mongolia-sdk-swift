@@ -50,8 +50,11 @@ extension EidPades {
 extension EidPades.Completed {
     /// The CA registration body for this signature (Go `pades.Registration`). Prior signatures go as `priorCmsSha256`
     /// only — sending the same signatures in `priorRevisionSha256` too is rejected by the CA (400).
-    /// - Throws: `REQUEST_INVALID` when revIndex is 1 without a verification page, or prepare had no valid `fileName`.
-    public func registration(medium: EidPades.Medium, sessionId: String? = nil,
+    ///
+    /// `medium` nil = inferred the way the CA pairs them: `sessionId` given → `.phone`, else `.token`.
+    /// - Throws: `REQUEST_INVALID` when revIndex is 1 without a verification page, prepare had no valid `fileName`,
+    ///   `.phone` has no `sessionId`, `.token` has a `sessionId`, or `claimedRole` was prepared without `onBehalfOf`.
+    public func registration(medium: EidPades.Medium? = nil, sessionId: String? = nil,
                              onBehalfOf: String? = nil) throws -> EidPades.Registration {
         if revIndex == 1 && !hasPage {
             throw EidPadesError(code: .requestInvalid,
@@ -60,8 +63,20 @@ extension EidPades.Completed {
         guard let fileName, !fileName.isEmpty else {
             throw EidPadesError(code: .requestInvalid, message: "fileName empty (PrepareOptions.fileName)")
         }
+        let session = sessionId?.nilIfEmpty
+        let medium = medium ?? (session != nil ? .phone : .token)
+        switch (medium, session) {
+        case (.phone, nil):
+            throw EidPadesError(code: .requestInvalid, message: "medium phone requires sessionId (the RAW_DIGEST_SIGNATURE session)")
+        case (.token, .some):
+            throw EidPadesError(code: .requestInvalid, message: "medium token takes no sessionId")
+        default: break
+        }
+        if claimedRole?.nilIfEmpty != nil, onBehalfOf?.nilIfEmpty == nil {
+            throw EidPadesError(code: .requestInvalid, message: "claimedRole was prepared: onBehalfOf (NTRMN-…) is required")
+        }
         var r = EidPades.Registration(
-            docID: docId, revIndex: revIndex, medium: medium, sessionID: sessionId?.nilIfEmpty, cms: cms.base64EncodedString(),
+            docID: docId, revIndex: revIndex, medium: medium, sessionID: session, cms: cms.base64EncodedString(),
             fileName: fileName, inSha256: inSha256, pageSha256: revIndex == 1 ? pageSha256 : nil,
             sigRevSha256: sigRevSha256, outSha256: outSha256, onBehalfOf: onBehalfOf?.nilIfEmpty)
         if !priorCmsSha256.isEmpty {

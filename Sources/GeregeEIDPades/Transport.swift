@@ -6,7 +6,8 @@ public protocol EidPadesTransport: Sendable {
     func send(method: String, url: URL, contentType: String?, body: Data?) async throws -> Data
 }
 
-/// URLSession transport: 10 s timeout, no redirects, response ≤ 4 MiB (Go reference `fetch.go`).
+/// URLSession transport: 10 s total per request (`timeoutIntervalForResource`, like Go `http.Client.Timeout` — not only
+/// the idle `timeoutInterval`), no redirects, response ≤ 4 MiB (Go reference `fetch.go`).
 public struct URLSessionPadesTransport: EidPadesTransport {
     public init() {}
 
@@ -15,7 +16,10 @@ public struct URLSessionPadesTransport: EidPadesTransport {
         req.httpMethod = method
         if let contentType { req.setValue(contentType, forHTTPHeaderField: "Content-Type") }
         req.httpBody = body
-        let session = URLSession(configuration: .ephemeral, delegate: NoRedirect(), delegateQueue: nil)
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 10
+        config.timeoutIntervalForResource = 10
+        let session = URLSession(configuration: config, delegate: NoRedirect(), delegateQueue: nil)
         defer { session.finishTasksAndInvalidate() }
         let (data, resp) = try await session.data(for: req)
         guard let http = resp as? HTTPURLResponse, http.statusCode == 200, data.count <= 4 << 20 else {

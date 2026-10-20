@@ -170,6 +170,9 @@ public enum EidPades {
         public let signerCert: Data
         /// `PrepareOptions.fileName` as cleaned by prepare (CA `cleanFileName`); nil when not given or invalid.
         public let fileName: String?
+        /// `PrepareOptions.claimedRole` carried through the state; nil when the signature is personal. `registration`
+        /// requires `onBehalfOf` when this is set (the CA rejects a claimed role without an organisation).
+        public var claimedRole: String? = nil
     }
 
     // MARK: - prepare
@@ -335,7 +338,7 @@ public enum EidPades {
                          sigRevSha256: Crypto.hex(Crypto.sha256(signed)),
                          priorCmsSha256: prior.map { Crypto.hex(Crypto.sha256($0.cms)) },
                          priorRevisionSha256: prior.map { Crypto.hex(Crypto.sha256(Array(signed[0..<$0.end]))) },
-                         signerCert: Data(cert.raw), fileName: st.fileName)
+                         signerCert: Data(cert.raw), fileName: st.fileName, claimedRole: st.claimedRole?.nilIfEmpty)
     }
 
     /// Light self-check of the output (no full validator — Go runs the CA validator here): the document parses, its
