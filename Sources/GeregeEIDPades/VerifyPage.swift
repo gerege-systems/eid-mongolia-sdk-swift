@@ -266,8 +266,9 @@ enum VerifyPage {
     }
 
     /// Appends the page as an incremental update: page, content, 2 × Type0 font (5 objects each), Courier, links;
-    /// then the /Pages root rewritten (/Kids + page, /Count + 1). The Catalog is unchanged.
-    static func append(_ base: [UInt8], _ p: Data) throws -> [UInt8] {
+    /// then the /Pages root rewritten (/Kids + page — at the end, or at the front when `first`, PAGE_SPEC §8a; /Count + 1).
+    /// The Catalog is unchanged.
+    static func append(_ base: [UInt8], _ p: Data, first: Bool = false) throws -> [UInt8] {
         let reg = try Font.regular.get(), bld = try Font.bold.get()
         let (content, links) = try content(p, reg: reg, bld: bld)
         let inc = try PdfIncremental(base)
@@ -301,8 +302,14 @@ enum VerifyPage {
             pn += " /" + PdfIncremental.escapeName(key) + " " + (try inc.serialize(pages[key]))
         }
         pn += " /Kids ["
-        for k in kids { pn += try inc.serialize(k) + " " }
-        pn += "\(pageID) 0 R] /Count \(count + 1) >>"
+        if first {
+            pn += "\(pageID) 0 R"
+            for k in kids { pn += " " + (try inc.serialize(k)) }
+            pn += "] /Count \(count + 1) >>"
+        } else {
+            for k in kids { pn += try inc.serialize(k) + " " }
+            pn += "\(pageID) 0 R] /Count \(count + 1) >>"
+        }
         inc.writeObject(pp.id, gen: pp.gen, Array(pn.utf8))
         return try inc.finish(rootID: rootRef.id)
     }

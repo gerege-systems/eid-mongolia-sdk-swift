@@ -54,6 +54,13 @@ reference-тэй **ижил байт** гаргаж байгааг шалган�
   the verify page, its docId Link and URI action are generation 1/2 objects. New cases: `verify-gen1` (first signature,
   invisible), `page0-verify-gen1` (docId read from the generation-1 Link, page 1), `page-explicit-verify-gen1` (widget
   on the generation-1 page, rewritten as `6 1 obj`). TSA fixtures `http/38…40`.
+- **v9** (`pades-golden-v9`, PAGE_SPEC.md §8a, PLACEMENT_SPEC.md §1b): `prepare.verifyPagePosition` `"last"` (default) |
+  `"first"`. All v8 cases, outputs and HTTP fixtures are byte-identical. New cases: `vpfirst-single` (1-page input),
+  `vpfirst-multi` (2 pages), `vpfirst-visible-explicit` (`page: 2` → drawn on output page 3, `placement.page` 2),
+  `vpfirst-visible-page0` (page 0 → input page 2), `vpfirst-second-page0` (second signer on a document whose verify page
+  is page 1 → its last page, 3), `vpfirst-second-explicit-verify` (`page: 1` there = the front verify page, kept),
+  `vpfirst-nopage` (no page added → prepared bytes = `quartz-pdf13-nopage`), `vpfirst-invalid` (`"middle"` →
+  `REQUEST_INVALID`). TSA fixtures `http/41…47`.
 - `placement/` — scanner conformance: `vectors.json` (exact occupancy box list + chosen position per input/request) and
   `placement/input/*.pdf` (one fixture per scanner rule). Native SDKs sync this folder too.
 - `ci/pyhanko_check.py` — гаралт бүрийг pyHanko-оор (CI job `golden-external`, qpdf `--check`-тэй хамт) шалгана.

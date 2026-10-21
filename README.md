@@ -15,7 +15,7 @@
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.7.1")
+    .package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.8.0")
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -53,6 +53,8 @@ let body = try JSONEncoder().encode(done.registration(medium: .phone, sessionId:
 - `prepare`: урьдчилсан шалгуур (шифрлэлт, DocMDP P=1, өмнөх гарын үсэг, ≤ 16), эхний eID гарын үсэгт
   `verifyPage: true` бол баталгаажуулалтын (QR) хуудас (`lang`: `mn` анхдагч / `en`; NotoSans subset фонт, OFL —
   `Sources/GeregeEIDPades/Resources/fonts/OFL.txt`), гарын үсгийн revision, signedAttrs (+ `claimedRole`) → DTBS.
+  `verifyPagePosition: "first"` (0.8.0+) — хуудас баримтын 1-р хуудас болно (анхдагч `"last"`); `appearance.page`,
+  `suggestPlacement`, `placement.page` оролтын PDF-ийн хуудсаар тоологдоно (`PAGE_SPEC.md` §8a, `PLACEMENT_SPEC.md` §1b).
 - `complete`: иргэний гарын үсгийг DTBS дээр шалгана (RSA PKCS#1 v1.5, ECDSA) → RFC 3161 → CMS → embed →
   OCSP/CRL → DSS revision.
 - **Харагдах гарын үсэг** (сонголттой, Go `APPEARANCE_SPEC.md`): `PrepareOptions.appearance = .init(page: 0, x: 36, y: 36,
@@ -115,5 +117,5 @@ and returns a 32-byte DTBS to be signed by the citizen's phone or USB token; `co
 RFC 3161 timestamp, OCSP/CRL and DSS (PAdES B-LT). Output is byte-identical to the Go reference
 (`gerege-systems/eid-mongolia-sdk-go`, profile `pades-client/1`), enforced by golden vectors in CI.
 iOS 14+ / macOS 13+, no third-party dependencies. Install via SwiftPM:
-`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.7.1")` (use the latest tag), product
+`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.8.0")` (use the latest tag), product
 `GeregeEIDPades`. This repository is a read-only mirror; please file issues here.

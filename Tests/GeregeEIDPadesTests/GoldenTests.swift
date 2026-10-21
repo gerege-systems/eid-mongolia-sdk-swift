@@ -30,6 +30,7 @@ final class GoldenTests: XCTestCase {
             var appearance: Appearance?
             var docId: String?
             var verifyPage: Bool?
+            var verifyPagePosition: String?
             var fileName: String?
             var lang: String?
             var reason: String?
@@ -152,7 +153,7 @@ final class GoldenTests: XCTestCase {
                 appearance: c.prepare.appearance.map {
                     EidPades.SignatureAppearance(page: $0.page ?? 0, x: $0.x, y: $0.y, width: $0.width, height: $0.height,
                                                  lang: $0.lang, exact: $0.exact ?? false)
-                })
+                }, verifyPagePosition: c.prepare.verifyPagePosition)
             // suggestPlacement (PLACEMENT_SPEC §6b) field-for-field, before prepare (Go golden_test order).
             var suggestion: EidPades.PlacementSuggestion?
             if let a = o.appearance {

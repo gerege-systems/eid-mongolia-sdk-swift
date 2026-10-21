@@ -41,6 +41,11 @@ public enum EidPades {
         public var docId: String?
         /// Append the verification (QR) page — only for an unsigned document (first eID signature).
         public var verifyPage: Bool
+        /// Where the verification page goes when it is added (verifyPage on an unsigned document): "last" (default; also
+        /// nil/empty) or "first" (it becomes page 1). `appearance.page`, `suggestPlacement` and `placement.page` always
+        /// count the pages of the input PDF as given — never the added page (PAGE_SPEC §8a, PLACEMENT_SPEC §1b). Other
+        /// values → REQUEST_INVALID.
+        public var verifyPagePosition: String?
         /// Document name shown on the page (required with verifyPage; ≤ 120 characters).
         public var fileName: String?
         /// Verification page language "mn" (default) | "en".
@@ -51,7 +56,7 @@ public enum EidPades {
         public init(signerCert: Data, chain: [Data]? = nil, signerName: String? = nil, reason: String? = nil,
                     claimedRole: String? = nil, signingTime: Date? = nil, docId: String? = nil,
                     verifyPage: Bool = false, fileName: String? = nil, lang: String? = nil,
-                    appearance: SignatureAppearance? = nil) {
+                    appearance: SignatureAppearance? = nil, verifyPagePosition: String? = nil) {
             self.signerCert = signerCert
             self.chain = chain
             self.signerName = signerName
@@ -63,6 +68,7 @@ public enum EidPades {
             self.fileName = fileName
             self.lang = lang
             self.appearance = appearance
+            self.verifyPagePosition = verifyPagePosition
         }
     }
 
@@ -231,6 +237,10 @@ public enum EidPades {
         if let l = o.lang, !l.isEmpty, l != "mn", l != "en" {
             throw EidPadesError(code: .requestInvalid, message: "lang: mn | en")
         }
+        if let p = o.verifyPagePosition, !p.isEmpty, p != "last", p != "first" {
+            throw EidPadesError(code: .requestInvalid, message: "verifyPagePosition: last | first")
+        }
+        let first = o.verifyPagePosition == "first"
         try checkAppearance(o)
         let now = o.signingTime ?? Date()
         let inHex = Crypto.hex(Crypto.sha256(doc))
@@ -259,7 +269,7 @@ public enum EidPades {
                     brand: "eID Mongolia", fileName: fileName, documentHash: inHex, fileSize: doc.count, docId: docID,
                     verifyURL: Prechecks.verifyURLPrefix + docID, trustURL: "https://eidmongolia.mn/trust",
                     caName: cert.issuerCommonName, tsaName: "eID Mongolia TSA (tsa.timeserver.mn)", provider: "ca.eidmongolia.mn",
-                    lang: o.lang ?? ""))
+                    lang: o.lang ?? ""), first: first)
             } catch {
                 throw EidPadesError(code: .pdfInvalid, message: "could not append the verification page: \(error)")
             }
@@ -268,10 +278,13 @@ public enum EidPades {
         var name = o.signerName ?? ""
         if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { name = CMS.signerDisplayName(cert) }
         let visible = try o.appearance.map { try visibleSpec(doc, $0, o, name: name, now: now, docID: docID, revIndex: revIndex) }
+        // visible.page counts the input's pages; a verify page added in front shifts them by one in base (PLACEMENT_SPEC §1b).
+        var onBase = visible
+        if hasPage, first { onBase?.page += 1 }
         let prep: PadesSignature.Prepared
         do {
             prep = try PadesSignature.prepare(base, signingTime: now, timeZone: signingTimeZone, signerName: name,
-                                              reason: o.reason ?? "", visible: visible)
+                                              reason: o.reason ?? "", visible: onBase)
         } catch let e as Appearance.Failure {
             throw EidPadesError(code: .requestInvalid, message: "appearance: \(e)")
         } catch {
