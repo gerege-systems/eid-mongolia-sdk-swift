@@ -49,24 +49,52 @@ enum StampPlacement {
         if rot == 90 || rot == 270 { swap(&vw, &vh) }
         for (cx, cy) in candidates(vw: vw, vh: vh, x: x, y: y, w: w, h: h) {
             guard let r = try? Appearance.rect(box: box, rot: rot, x: cx, y: cy, w: w, h: h) else { continue }
-            let e = [r[0] - pad, r[1] - pad, r[2] + pad, r[3] + pad]
-            if !occ.contains(where: { b in b[0] < e[2] && e[0] < b[2] && b[1] < e[3] && e[1] < b[3] }) {
-                return (cx, cy)
-            }
+            if free(r, occ) { return (cx, cy) }
         }
         return nil
     }
 
-    /// Scan + choice for a visible stamp at (x, y, w, h) on `page` (reached as object `pageID`).
+    /// `r` (user space, h100) grown by `pad` on every side overlaps no occupied box (strict overlap: touching edges are
+    /// free) — Go `placeFree`.
+    static func free(_ r: [Int], _ occ: [[Int]]) -> Bool {
+        let e = [r[0] - pad, r[1] - pad, r[2] + pad, r[3] + pad]
+        return !occ.contains(where: { b in b[0] < e[2] && e[0] < b[2] && b[1] < e[3] && e[1] < b[3] })
+    }
+
+    /// Scan + choice for a visible stamp at (x, y, w, h) on `page` (reached as object `pageID`) — Go `PlaceOnPage`.
+    /// `exact` (§6a): the requested rect is the only candidate (never moved) — `.requested` when free, `.overlap` when not.
     static func choose(_ r: PdfReader, page: PdfDict, pageID: Int, box: [Int], rot: Int,
-                       x: Int, y: Int, w: Int, h: Int) -> Result {
+                       x: Int, y: Int, w: Int, h: Int, exact: Bool = false) -> Result {
         guard let occ = try? Occupancy.scan(r, page: page, pageID: pageID, box: box) else {
             return Result(x: x, y: y, status: .unscanned)
+        }
+        if exact {
+            guard let rect = try? Appearance.rect(box: box, rot: rot, x: x, y: y, w: w, h: h), free(rect, occ) else {
+                return Result(x: x, y: y, status: .overlap)
+            }
+            return Result(x: x, y: y, status: .requested)
         }
         guard let (px, py) = place(box: box, rot: rot, x: x, y: y, w: w, h: h, occ: occ) else {
             return Result(x: x, y: y, status: .overlap)
         }
         return px == x && py == y ? Result(x: x, y: y, status: .requested) : Result(x: px, y: py, status: .moved)
+    }
+
+    /// Where the stamp goes on page `page` (1-based, resolved) of the /Pages tree `pages` — the one path shared by
+    /// `PadesSignature.prepare` and `EidPades.suggestPlacement` (PLACEMENT_SPEC §6b): page → geometry → the requested
+    /// rect must lie inside the page (`Appearance.Failure`) → scan + choice. `rect` is the final /Rect (user space, h100).
+    static func locate(_ r: PdfReader, pages: PdfObject, page: Int, x: Int, y: Int, w: Int, h: Int,
+                       exact: Bool) throws -> (page: PadesSignature.Page, rot: Int, rect: [Int], result: Result) {
+        guard let p = try Appearance.nthPage(r, pages, page) else { throw Appearance.Failure("page \(page) missing") }
+        let (box, rot) = try Appearance.geometry(r, p.dict)
+        var rect = try Appearance.rect(box: box, rot: rot, x: x, y: y, w: w, h: h)
+        // PLACEMENT_SPEC.md: move off existing page content (exact: only report it); the requested rect stays when
+        // nothing is free.
+        let placed = choose(r, page: p.dict, pageID: p.ref.id, box: box, rot: rot, x: x, y: y, w: w, h: h, exact: exact)
+        if placed.status == .moved {
+            rect = try Appearance.rect(box: box, rot: rot, x: placed.x, y: placed.y, w: w, h: h)
+        }
+        return (p, rot, rect, placed)
     }
 }
 

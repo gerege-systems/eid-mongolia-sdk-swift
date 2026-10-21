@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0 — 2026-10-21
+
+### Go reference v0.14.0 (golden v7): `appearance.exact` + `suggestPlacement`
+
+- `SignatureAppearance.exact` (анхдагч false): тамга яг page/x/y/width/height-д зурагдана, хэзээ ч шилжихгүй — иргэн
+  урьдчилан харах дээр чирсэн байрлал. `placement.status` = requested | overlap (агуулга дээр) | unscanned; moved үгүй.
+  Хуудаснаас гарвал `REQUEST_INVALID`. `exact = false` өмнөхтэй байт-ижил.
+- `EidPades.suggestPlacement(pdf, appearance)` → `PlacementSuggestion` (page, x, y, width, height, status, pageWidth,
+  pageHeight, pageCount, pages) — prepare-ийн байрлалыг гарын үсэг, сертификат, сүлжээгүйгээр (`PLACEMENT_SPEC.md` §6b).
+- Golden = Go reference `pades-golden-v7` (+5 `exact-*` кейс, `expect.suggestion`).
+
 ## 0.6.0 — 2026-10-20
 
 ### Docs — README нь 0.5.0-ийн API-тай нийцэв

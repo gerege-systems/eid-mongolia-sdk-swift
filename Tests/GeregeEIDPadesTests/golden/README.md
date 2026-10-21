@@ -43,6 +43,12 @@ reference-тэй **ижил байт** гаргаж байгааг шалган�
   used page 0 on a document that already had a verify page). New cases: `page0-after-verify`,
   `page0-after-verify-second`, `page0-two-verify` (`input/two-verify.pdf`), `page-explicit-verify`,
   `page0-fake-verify` (`input/fake-verify.pdf`). TSA fixtures `http/28…32`.
+- **v7** (`pades-golden-v7`, PLACEMENT_SPEC.md §6a/§6b): `appearance.exact` + `SuggestPlacement`. All v6 outputs, HTTP
+  fixtures and prepare/complete values are byte-identical; every visible case gains `expect.suggestion` (`{page, x, y,
+  width, height, status, pageWidth, pageHeight, pageCount, pages: [{width, height}]}`). New cases: `exact-on-content`
+  (overlap, not moved), `exact-free` (prepared bytes = `table-bottom-visible`), `exact-rotated90-on-footer`,
+  `exact-page0-after-verify` (prepared bytes = `page0-after-verify`), `exact-out-of-bounds` (`REQUEST_INVALID`,
+  `suggestionError` too). TSA fixtures `http/33`, `http/35…37`.
 - `placement/` — scanner conformance: `vectors.json` (exact occupancy box list + chosen position per input/request) and
   `placement/input/*.pdf` (one fixture per scanner rule). Native SDKs sync this folder too.
 - `ci/pyhanko_check.py` — гаралт бүрийг pyHanko-оор (CI job `golden-external`, qpdf `--check`-тэй хамт) шалгана.

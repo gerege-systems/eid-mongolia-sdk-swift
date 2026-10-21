@@ -8,16 +8,7 @@ enum Prechecks {
     /// PRECHECKS.md #4–#10. (newDoc, revIndex): unsigned → (true, 1); signed and acceptable → (false, signatures + 1).
     /// `issuers` = eID issuing CAs (04, 05) + the current signer's issuer (chain[0]).
     static func inspect(_ doc: [UInt8], issuers: [X509Cert]) throws -> (Bool, Int) {
-        let r: PdfReader
-        do { r = try PdfReader(doc) } catch {
-            if encryptedByScan(doc) { throw EidPadesError(code: .pdfEncrypted, message: "encrypted PDF") }  // #4
-            throw EidPadesError(code: .pdfInvalid, message: "not a PDF or damaged: \(error)")              // #5
-        }
-        if !r.trailer["Encrypt"].isNull { throw EidPadesError(code: .pdfEncrypted, message: "encrypted PDF") }
-        guard let root = (try? r.resolve(r.trailer["Root"]))?.dict else {
-            throw EidPadesError(code: .pdfInvalid, message: "Catalog missing")
-        }
-        let sigs = signatureDicts(r)                                                                         // #6
+        let (r, root, sigs) = try open(doc)
         if sigs.isEmpty { return (true, 1) }
         guard sigs.count < EidPades.maxSignatures else {                                                     // #7
             throw EidPadesError(code: .pdfTooManySignatures, message: "too many signatures")
@@ -38,6 +29,21 @@ enum Prechecks {
             throw EidPadesError(code: .pdfForeignSignature, message: "document has a signature that is not an eID B-LT signature")
         }
         return (false, sigs.count + 1)
+    }
+
+    /// PRECHECKS.md #4–#6 (Go `encrypted` + `scanSignatures`): the reader, the Catalog and the signature dictionaries.
+    /// Shared by `prepare` and `suggestPlacement`.
+    static func open(_ doc: [UInt8]) throws -> (PdfReader, PdfDict, [PdfDict]) {
+        let r: PdfReader
+        do { r = try PdfReader(doc) } catch {
+            if encryptedByScan(doc) { throw EidPadesError(code: .pdfEncrypted, message: "encrypted PDF") }  // #4
+            throw EidPadesError(code: .pdfInvalid, message: "not a PDF or damaged: \(error)")              // #5
+        }
+        if !r.trailer["Encrypt"].isNull { throw EidPadesError(code: .pdfEncrypted, message: "encrypted PDF") }
+        guard let root = (try? r.resolve(r.trailer["Root"]))?.dict else {
+            throw EidPadesError(code: .pdfInvalid, message: "Catalog missing")
+        }
+        return (r, root, signatureDicts(r))                                                                  // #6
     }
 
     /// A /Reference entry (/TransformMethod /DocMDP or absent) with /TransformParams /P 1.
@@ -88,8 +94,8 @@ enum Prechecks {
     static func encryptedByScan(_ doc: [UInt8]) -> Bool { Structure.hasEncryptRef(doc) }
 
     /// docId from the first eID signature's verification page (/Link /URI https://ca.eidmongolia.mn/verify/<uuid>).
-    static func docIDFromPage(_ doc: [UInt8]) -> String? {
-        guard let r = try? PdfReader(doc) else { return nil }
+    static func docIDFromPage(_ doc: [UInt8], reader: PdfReader? = nil) -> String? {
+        guard let r = reader ?? (try? PdfReader(doc)) else { return nil }
         for id in r.xref.keys.sorted() {
             guard let d = (try? r.object(PdfRef(id: id, gen: 0)))?.dict,
                   (try? r.resolve(d["Subtype"]))?.nameValue == "Link",

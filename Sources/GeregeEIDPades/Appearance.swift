@@ -23,6 +23,8 @@ enum Appearance {
         var date: String
         /// https://ca.eidmongolia.mn/verify/<docID>/<revIndex>
         var url: String
+        /// PLACEMENT_SPEC §6a: never move the stamp; the scan only reports `.overlap`.
+        var exact = false
     }
 
     struct Params {
@@ -243,7 +245,22 @@ enum Appearance {
     /// is not an eID verify page — and the page count n. All pages verify pages → n.
     static func defaultStampPage(_ doc: [UInt8], verifyURI: String) throws -> (page: Int, n: Int) {
         let inc = try PdfIncremental(doc)
-        let r = inc.reader
+        let pages = try pageList(inc.reader, inc.root["Pages"])
+        return (lastContentPage(inc.reader, pages, verifyURI: verifyURI), pages.count)
+    }
+
+    /// The last page (1-based) of `pages` that is not an eID verify page of `verifyURI` ("" = none skipped); all verify
+    /// pages → the page count.
+    static func lastContentPage(_ r: PdfReader, _ pages: [PdfDict], verifyURI: String) -> Int {
+        let n = pages.count
+        for i in stride(from: n - 1, through: 0, by: -1) where verifyURI.isEmpty || !isVerifyPage(r, pages[i], verifyURI: verifyURI) {
+            return i + 1
+        }
+        return n
+    }
+
+    /// Go `pageList`: the /Page dictionaries in /Pages tree order (depth ≤ 32, at most 65 537).
+    static func pageList(_ r: PdfReader, _ root: PdfObject) throws -> [PdfDict] {
         var pages: [PdfDict] = []
         func walk(_ node: PdfObject, _ depth: Int) throws {
             guard depth <= maxDepth, pages.count <= 1 << 16, let d = try r.resolve(node).dict else { return }
@@ -254,12 +271,29 @@ enum Appearance {
             default: break
             }
         }
-        try walk(inc.root["Pages"], 0)
+        try walk(root, 0)
+        return pages
+    }
+
+    /// Go `core.SuggestVisible` (PLACEMENT_SPEC §6b): the placement `PadesSignature.prepare` would choose, without
+    /// writing anything. `page` 0 → the last page that is not a verify page of `verifyURI` ("" = the last page); x, y,
+    /// w, h in h100. `sizes` = every page's visible (w, h) in h100, nil when its geometry cannot be read. Request errors
+    /// (page > count, geometry, rect outside the page) are `Failure`; anything else is a PDF error.
+    static func suggest(_ doc: [UInt8], verifyURI: String, page: Int, x: Int, y: Int, w: Int, h: Int,
+                        exact: Bool) throws -> (page: Int, result: StampPlacement.Result, sizes: [(w: Int, h: Int)?]) {
+        let inc = try PdfIncremental(doc)
+        let r = inc.reader
+        let pages = try pageList(r, inc.root["Pages"])
         let n = pages.count
-        for i in stride(from: n - 1, through: 0, by: -1) where !isVerifyPage(r, pages[i], verifyURI: verifyURI) {
-            return (i + 1, n)
+        let page = page == 0 ? lastContentPage(r, pages, verifyURI: verifyURI) : page
+        guard page >= 1, page <= n else { throw Failure("page \(page) > page count \(n)") }
+        let sizes: [(w: Int, h: Int)?] = pages.map { d in
+            guard let (box, rot) = try? geometry(r, d) else { return nil }
+            let bw = box[2] - box[0], bh = box[3] - box[1]
+            return rot == 90 || rot == 270 ? (bh, bw) : (bw, bh)
         }
-        return (n, n)
+        let placed = try StampPlacement.locate(r, pages: inc.root["Pages"], page: page, x: x, y: y, w: w, h: h, exact: exact)
+        return (page, placed.result, sizes)
     }
 
     /// Go `isVerifyPage`: /Annots (first 10 000) holds a /Link whose /A is `/S /URI` with /URI byte-equal to verifyURI.

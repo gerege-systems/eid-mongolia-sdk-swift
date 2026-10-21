@@ -24,14 +24,18 @@
     "POST http://tsa.pki.test/ 8b3f01e6113f2de8": "http/30-ea8e206164c9.der",
     "POST http://tsa.pki.test/ 8dad7b20fd0e2ad8": "http/10-b719e53d897d.der",
     "POST http://tsa.pki.test/ 90f3b413e4c57d18": "http/11-cd50b9506366.der",
+    "POST http://tsa.pki.test/ 9583bfebe94da115": "http/37-a948efbdf02a.der",
     "POST http://tsa.pki.test/ 98ff66290a4f9acb": "http/31-e68126593621.der",
     "POST http://tsa.pki.test/ 9e12fb25b82dc264": "http/12-8fc107a5b268.der",
     "POST http://tsa.pki.test/ a07f55fd73d7511f": "http/13-97e324e0fbe0.der",
     "POST http://tsa.pki.test/ a348c19722ca4aa4": "http/25-73b38c1c8f00.der",
     "POST http://tsa.pki.test/ a41b73417a686b11": "http/14-559a8f2a540d.der",
+    "POST http://tsa.pki.test/ aa998b61ba261478": "http/33-b5ebabfec58d.der",
     "POST http://tsa.pki.test/ acdec6b46401e83b": "http/18-cd7763c98dd0.der",
     "POST http://tsa.pki.test/ af79cd1447a8acb8": "http/15-63f81ab86074.der",
+    "POST http://tsa.pki.test/ ce437db6d963f071": "http/35-afe9e68c1497.der",
     "POST http://tsa.pki.test/ cf4a802a1a62dde0": "http/19-210f84c7543b.der",
+    "POST http://tsa.pki.test/ d76c81c85467f00a": "http/36-175dbd2c5846.der",
     "POST http://tsa.pki.test/ dbce9b70b8a01cd7": "http/20-c8b7bdce3eae.der",
     "POST http://tsa.pki.test/ e393d7136f7f36e6": "http/21-907c56fced94.der",
     "POST http://tsa.pki.test/ e8d7e7a15a8687f3": "http/16-4b9f46364e26.der",
@@ -395,6 +399,23 @@
           "width": 220,
           "height": 64,
           "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            }
+          ]
         }
       }
     },
@@ -442,6 +463,23 @@
           "width": 220,
           "height": 64,
           "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            }
+          ]
         }
       }
     },
@@ -489,6 +527,27 @@
           "width": 236,
           "height": 72,
           "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 236,
+          "height": 72,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -535,6 +594,27 @@
           "width": 220,
           "height": 64,
           "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -582,6 +662,23 @@
           "width": 220,
           "height": 64,
           "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 36,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 792,
+          "pageHeight": 612,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 792,
+              "height": 612
+            }
+          ]
         }
       }
     },
@@ -629,6 +726,27 @@
           "width": 220,
           "height": 64,
           "status": "moved"
+        },
+        "suggestion": {
+          "page": 2,
+          "x": 340,
+          "y": 60,
+          "width": 220,
+          "height": 64,
+          "status": "moved",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 612,
+              "height": 792
+            }
+          ]
         }
       }
     },
@@ -676,6 +794,31 @@
           "width": 220,
           "height": 64,
           "status": "moved"
+        },
+        "suggestion": {
+          "page": 2,
+          "x": 340,
+          "y": 132,
+          "width": 220,
+          "height": 64,
+          "status": "moved",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 3,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -723,6 +866,23 @@
           "width": 220,
           "height": 64,
           "status": "moved"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 168,
+          "width": 220,
+          "height": 64,
+          "status": "moved",
+          "pageWidth": 595.28,
+          "pageHeight": 841.89,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -770,6 +930,23 @@
           "width": 220,
           "height": 64,
           "status": "moved"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 536,
+          "y": 60,
+          "width": 220,
+          "height": 64,
+          "status": "moved",
+          "pageWidth": 792,
+          "pageHeight": 612,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 792,
+              "height": 612
+            }
+          ]
         }
       }
     },
@@ -817,6 +994,27 @@
           "width": 220,
           "height": 64,
           "status": "moved"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 52,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "moved",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -864,6 +1062,23 @@
           "width": 220,
           "height": 64,
           "status": "overlap"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "overlap",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            }
+          ]
         }
       }
     },
@@ -951,6 +1166,27 @@
           "width": 220,
           "height": 64,
           "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -996,6 +1232,27 @@
           "width": 220,
           "height": 64,
           "status": "moved"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 52,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "moved",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -1038,6 +1295,31 @@
           "width": 220,
           "height": 64,
           "status": "requested"
+        },
+        "suggestion": {
+          "page": 3,
+          "x": 340,
+          "y": 84,
+          "width": 220,
+          "height": 64,
+          "status": "moved",
+          "pageWidth": 595.28,
+          "pageHeight": 841.89,
+          "pageCount": 3,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -1083,6 +1365,27 @@
           "width": 220,
           "height": 64,
           "status": "moved"
+        },
+        "suggestion": {
+          "page": 2,
+          "x": 340,
+          "y": 84,
+          "width": 220,
+          "height": 64,
+          "status": "moved",
+          "pageWidth": 595.28,
+          "pageHeight": 841.89,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
         }
       }
     },
@@ -1125,7 +1428,320 @@
           "width": 220,
           "height": 64,
           "status": "requested"
+        },
+        "suggestion": {
+          "page": 2,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 612,
+              "height": 792
+            }
+          ]
         }
+      }
+    },
+    {
+      "name": "exact-on-content",
+      "input": "input/table-bottom.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+        "verifyPage": true,
+        "fileName": "table.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "exact": true
+        }
+      },
+      "expect": {
+        "inputSha256": "6dd8e577e7c17bd8dabbec20293c495ce33c1f5361562c9750b31c5edbbe416e",
+        "docId": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+        "digest": "68040ec1ae1046191f59bd45eb6cb775da8415cde57e03f05d24211d89dc9f7c",
+        "dtbs": "39cea92aba7f728aaedbb8ea879299db1e22a31db9f706b798f28fd04fe133d0",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d0109043122042068040ec1ae1046191f59bd45eb6cb775da8415cde57e03f05d24211d89dc9f7c308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "65d6fe41d7c505479c190ae25a9692725e5d16b870e8ff13e4ee4a99fede37f14bebba5fea5664975d5052dc6076e3d4f4b410646104c551f156bb0491333127bf2912400f01273bcf445bc3216679de5bcaf0368f94312b407650135c8acf7f9bdf14e982644d6a3a5744ca8aa85e98de0b9ee7bab2849dac76b74dde4e84b8186c274baa6c97a94c95480cd8ce4aeb4379011ca22278f46a1011cab3af072922adcc57b09b6d460cf3b484bf283514d20c7f983a1ba235a1759053c11c74e556fccb961926b66ffd258e1f34575dbe6948c7905f895c243a74940340737b410403b193ac64b5c5b423dd72452a63d1a9d80b3b175dc22bb4b35b72b2016be1",
+        "preparedSha256": "63ead0eca3bc9ec06429ccb8daf92542dffd9c353bf25272f9314059d16861e2",
+        "byteRange": [
+          0,
+          115354,
+          172700,
+          107659
+        ],
+        "outSha256": "555eee312848cb85a21c2d06f3d25818056bc7f1988e65a12cb4ac205b21956c",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "13970f118c56704b1b9c139390de2491136d1017aa0d3247bd0f8e24757c970b",
+        "sigRevSha256": "d7de94099dabbae5973bbaffaaa026d612c0f4bb4707b4e66523ee2206050b30",
+        "cmsSha256": "ddc587293c70a0720fc426a56c1b92e80c14a58853b033fca502d8e853661aef",
+        "placement": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "overlap"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "overlap",
+          "pageWidth": 595.28,
+          "pageHeight": 841.89,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "exact-free",
+      "input": "input/table-bottom.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+        "verifyPage": true,
+        "fileName": "table.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 340,
+          "y": 168,
+          "width": 220,
+          "height": 64,
+          "exact": true
+        }
+      },
+      "expect": {
+        "inputSha256": "6dd8e577e7c17bd8dabbec20293c495ce33c1f5361562c9750b31c5edbbe416e",
+        "docId": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+        "digest": "63b243c31f411f60a54aa3a878a801143de2ccc1bfffb84371284da872608a51",
+        "dtbs": "355ab25df7d3dc4beec009dd881252709e3acee74aa0f992a854cbfc259a3bc6",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d0109043122042063b243c31f411f60a54aa3a878a801143de2ccc1bfffb84371284da872608a51308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "287034ac8976aa895111ee1d1989f3318bb83dc0331670a88da1dac915ed520f35647aa861d77f6eefe4f0192ed10978211e825c20bf146bdcd0f892ae3f80c2b868682e31142447befb658458573d67ebfaabf10fc6cdca579032e3f5b8f61c19e0c6744be47a4be1cde2842e2e4eea41d051cf0c39c958cc7e6bad24e50b745298e2d5c4dc474e293df8d4eb5b10e928921628a09cc8454e838da0ab730bae7aa55a4b625ce9bfd6a9f1d86adfe3ce4957b5aa518b17fed2ae37c8df87e1204aa35e66ee9dd00f869bcfb723b59dccf1aadb63ee41b9dfff42b9975ec924445ceaec64982cab9d0f17ce0c1ad83bcf1382dc972e892a68df3f4517eae1ae9a",
+        "preparedSha256": "e10f158624e062fd7d5ee9345531c257da937007897daec4c0e6df91727b0925",
+        "byteRange": [
+          0,
+          115354,
+          172700,
+          107660
+        ],
+        "outSha256": "4516fc1fabcca2277e11c191cb4dc013dc819c3e5cdf072d7a51cbbc85532e7a",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "13970f118c56704b1b9c139390de2491136d1017aa0d3247bd0f8e24757c970b",
+        "sigRevSha256": "11a76e05b38b95d9b8f5a4bac2d21cf7a6261c2adb0119f41d41cd7ee3aa1d02",
+        "cmsSha256": "67fad83e4cf347cb822c47c76ebc8df5df8e46692bb1be0d0299b6228af13de8",
+        "placement": {
+          "page": 1,
+          "x": 340,
+          "y": 168,
+          "width": 220,
+          "height": 64,
+          "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 168,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 595.28,
+          "pageHeight": 841.89,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "exact-rotated90-on-footer",
+      "input": "input/rotated90-footer.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "d3e4f5a6-b7c8-4d9e-8f1a-2b3c4d5e6f70",
+        "verifyPage": true,
+        "fileName": "landscape.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 536,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "exact": true
+        }
+      },
+      "expect": {
+        "inputSha256": "6a10e58a96ef983a93bafe8ddb832a12c3164794fdf83378f2c5bb6363ba1a84",
+        "docId": "d3e4f5a6-b7c8-4d9e-8f1a-2b3c4d5e6f70",
+        "digest": "7dd0a49e0ff6392025085f981f112746867be9a39a6ee0e7117f7facd949311b",
+        "dtbs": "5f97b5e4a9e6aea73fda532fc76f795910eb0b4821488847a6a468a488d924a8",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d010904312204207dd0a49e0ff6392025085f981f112746867be9a39a6ee0e7117f7facd949311b308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "3e5f8d7872da949908e603b804a43342b4ef405dccdbdfb4096c484797399d4a2ac34ae564ff118a90feab090b7dd17ce21ea5e5156d7a708af9716ca8d433227c4b309e0759d40caf1e23e8b645e775a9385489ba247581285d42bc2366bc860c3e7a8da6b35fcb8c8ecbdcd5197d2a8d5c4a34655345340688a889c7a36d7166422ac22ba604c297e50fefa6815cc2ad88600c95f7f1b5293bfa2bcd3a7b8f34c19fa5e04007256a28b6417a2b0a266d676ef8dcdb45770a8dd1308b8b14a0ac5bcb8fd45ecb606a47e7b8f29d0768903777d82b47267f485fe8ed939320477f1b4be41e3f88d44e2774759465a1fdaaa5bbe05e483e63e34949cd60e9d3d7",
+        "preparedSha256": "a81b1386b5680e770359516a6d9202e6db4b1c53c37bad535b0bbb52f0f57150",
+        "byteRange": [
+          0,
+          114119,
+          171465,
+          107524
+        ],
+        "outSha256": "8d36edf7bec7d75622ede1f5df589c3829760b671b899519121ab9d9b26a621f",
+        "revIndex": 1,
+        "hasPage": true,
+        "pageSha256": "2cf3c570ff7238ac5cbf0d634ede87e110ca40d86150d565262af667e40b80e3",
+        "sigRevSha256": "8a64799ae15920fc977fa5c8bb4052107c77c2e58bfa71cd85ffabeba3d719db",
+        "cmsSha256": "56d08d52eefe5413ef75602c5ff1178bc6cbb6a10219ed6a5236e3dd25bdd4cb",
+        "placement": {
+          "page": 1,
+          "x": 536,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "overlap"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 536,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "overlap",
+          "pageWidth": 792,
+          "pageHeight": 612,
+          "pageCount": 1,
+          "pages": [
+            {
+              "width": 792,
+              "height": 612
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "exact-page0-after-verify",
+      "input": "case:quartz-pdf13",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "lang": "en",
+        "appearance": {
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "exact": true
+        }
+      },
+      "expect": {
+        "inputSha256": "d7dd3825a7067ef37399986a395abec8663f926876ebd8396248a459cd953d1a",
+        "docId": "6f0c2b9e-3a1d-4c55-9b7e-0a1b2c3d4e5f",
+        "digest": "79b7a28ad31a85992e2b1240679cd15c4af576033ea9e2253496a0cec8edb83c",
+        "dtbs": "b829e28cc66445924e9b5b7da2d72144ae07303e7ec35e13f3d040cc4a537070",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d0109043122042079b7a28ad31a85992e2b1240679cd15c4af576033ea9e2253496a0cec8edb83c308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "86eaf50754e702094d71cb40d3b151e1ea822ec476ce8c35fce515727fa1bced3a4136e440ececd34a03fabdc696ecec73e7e767799131ef8889655f3b294f7cca5273b244fd3ca79a85f30dabb0f41d679519d0719506aef3a4ab7ce04b72e926accba0d1bbbcbb5c1027c153b2f3c772ca287fd6c684f676ba02fbb2d625e64a30b5322c2688c0324a921c2bd7685302691b4f797ae4b3786f05d57e0fba8f32363203df3329c5b7324554d8d0c4addf25d49241fce1790c627b4e137b0c24d5b7d04cca8e95ce1269f228005d06ce538c05b44de00549332acc41652d7b76a72ad3d4aa0702e417d02b8da0f9a267a8dff0560ea8d8806174bc51830c50b8",
+        "preparedSha256": "9b508fe5dd16053c84de06d8b6c11ddf69ca7de148479c4f03e7c9422c1c42b3",
+        "byteRange": [
+          0,
+          194202,
+          251548,
+          107745
+        ],
+        "outSha256": "bb1ad42bce4b338689a2af895fb90af29e542aab5e6db5e9ae3a9c163b16c92f",
+        "revIndex": 2,
+        "sigRevSha256": "9c6417149dbb881938f539ca80bc43505f62ba0312963f29f2f73d1b8250f847",
+        "cmsSha256": "b8290e90be959ff1f20ec6349ba601aa289edc0b58a46bac85bb5d09394596e9",
+        "priorCmsSha256": [
+          "f6394ea03a2ef97fc7021e5d4dac477d75bc33b9f405804415a0be131b18e88f"
+        ],
+        "placement": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 595.28,
+              "height": 841.89
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "exact-out-of-bounds",
+      "input": "input/table-bottom.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+        "verifyPage": true,
+        "fileName": "table.pdf",
+        "lang": "mn",
+        "appearance": {
+          "x": 400,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "exact": true
+        }
+      },
+      "expect": {
+        "error": "REQUEST_INVALID",
+        "inputSha256": "6dd8e577e7c17bd8dabbec20293c495ce33c1f5361562c9750b31c5edbbe416e",
+        "byteRange": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "suggestionError": "REQUEST_INVALID"
       }
     }
   ]

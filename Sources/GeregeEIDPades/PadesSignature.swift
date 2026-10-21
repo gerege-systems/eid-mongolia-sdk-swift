@@ -86,15 +86,8 @@ enum PadesSignature {
             guard nameHex != nil, signerName.trimmingCharacters(in: .whitespacesAndNewlines) == vis.name else {
                 throw Appearance.Failure("/Name would not be written")
             }
-            guard let p = try Appearance.nthPage(r, root["Pages"], vis.page) else { throw Appearance.Failure("page \(vis.page) missing") }
-            let (box, rot) = try Appearance.geometry(r, p.dict)
-            var rect = try Appearance.rect(box: box, rot: rot, x: vis.x, y: vis.y, w: vis.w, h: vis.h)
-            // PLACEMENT_SPEC.md: move off existing page content; the requested rect stays when nothing is free.
-            let placed = StampPlacement.choose(r, page: p.dict, pageID: p.ref.id, box: box, rot: rot,
-                                          x: vis.x, y: vis.y, w: vis.w, h: vis.h)
-            if placed.status == .moved {
-                rect = try Appearance.rect(box: box, rot: rot, x: placed.x, y: placed.y, w: vis.w, h: vis.h)
-            }
+            let (p, rot, rect, placed) = try StampPlacement.locate(r, pages: root["Pages"], page: vis.page, x: vis.x, y: vis.y,
+                                                                   w: vis.w, h: vis.h, exact: vis.exact)
             placement = placed
             let bodies = try Appearance.objects(Appearance.Params(w: vis.w, h: vis.h, rotate: rot, name: vis.name, role: vis.role,
                                                                   lang: vis.lang, date: vis.date, url: vis.url), ids: apIDs)

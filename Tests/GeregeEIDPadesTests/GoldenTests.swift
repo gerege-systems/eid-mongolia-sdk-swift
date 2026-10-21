@@ -24,6 +24,7 @@ final class GoldenTests: XCTestCase {
             var width: Double
             var height: Double
             var lang: String?
+            var exact: Bool?
         }
         struct Prep: Decodable {
             var appearance: Appearance?
@@ -52,6 +53,19 @@ final class GoldenTests: XCTestCase {
             var sigRevSha256: String?
             var priorCmsSha256: [String]?
             var placement: Placement?
+            /// PLACEMENT_SPEC.md §6b (golden v7): `suggestPlacement(input, appearance)` on every visible case.
+            var suggestion: Suggestion?
+            var suggestionError: String?
+        }
+        /// Go `pades.Suggestion`.
+        struct Suggestion: Decodable {
+            struct Size: Decodable { var width, height: Double }
+            var page: Int
+            var x, y, width, height: Double
+            var status: String
+            var pageWidth, pageHeight: Double
+            var pageCount: Int
+            var pages: [Size]
         }
         /// Go `pades.Placement` (PLACEMENT_SPEC.md) — every visible case has one.
         struct Placement: Decodable {
@@ -136,8 +150,30 @@ final class GoldenTests: XCTestCase {
                 signingTime: m.signingTime, docId: c.prepare.docId, verifyPage: c.prepare.verifyPage ?? false,
                 fileName: c.prepare.fileName, lang: c.prepare.lang,
                 appearance: c.prepare.appearance.map {
-                    EidPades.SignatureAppearance(page: $0.page ?? 0, x: $0.x, y: $0.y, width: $0.width, height: $0.height, lang: $0.lang)
+                    EidPades.SignatureAppearance(page: $0.page ?? 0, x: $0.x, y: $0.y, width: $0.width, height: $0.height,
+                                                 lang: $0.lang, exact: $0.exact ?? false)
                 })
+            // suggestPlacement (PLACEMENT_SPEC §6b) field-for-field, before prepare (Go golden_test order).
+            var suggestion: EidPades.PlacementSuggestion?
+            if let a = o.appearance {
+                do {
+                    let s = try EidPades.suggestPlacement(pdf: input, appearance: a)
+                    suggestion = s
+                    XCTAssertNil(c.expect.suggestionError, "\(c.name): suggestPlacement succeeded, Go failed")
+                    if let want = c.expect.suggestion {
+                        XCTAssertEqual(s.page, want.page, "\(c.name) suggestion page")
+                        XCTAssertEqual([s.x, s.y, s.width, s.height, s.pageWidth, s.pageHeight],
+                                       [want.x, want.y, want.width, want.height, want.pageWidth, want.pageHeight], "\(c.name) suggestion")
+                        XCTAssertEqual(s.status.rawValue, want.status, "\(c.name) suggestion status")
+                        XCTAssertEqual(s.pageCount, want.pageCount, "\(c.name) suggestion pageCount")
+                        XCTAssertEqual(s.pages.map { [$0.width, $0.height] }, want.pages.map { [$0.width, $0.height] }, "\(c.name) suggestion pages")
+                    } else {
+                        XCTFail("\(c.name): visible case without expect.suggestion")
+                    }
+                } catch let e as EidPadesError {
+                    XCTAssertEqual(e.code.rawValue, c.expect.suggestionError, "\(c.name) suggestPlacement: \(e.message)")
+                }
+            }
             let p: EidPades.Prepared
             do {
                 p = try EidPades.prepare(pdf: input, options: o)
@@ -156,6 +192,12 @@ final class GoldenTests: XCTestCase {
             XCTAssertEqual(p.placement.map { [Double($0.page), $0.x, $0.y, $0.width, $0.height] },
                            c.expect.placement.map { [Double($0.page), $0.x, $0.y, $0.width, $0.height] }, "\(c.name) placement")
             XCTAssertEqual(p.placement?.status.rawValue, c.expect.placement?.status, "\(c.name) placement status")
+            // suggestion ⊇ placement, except page0-two-verify (unsigned input: suggestPlacement has no docId, §6b).
+            if let s = suggestion, c.name != "page0-two-verify" {
+                XCTAssertEqual(p.placement, EidPades.Placement(page: s.page, x: s.x, y: s.y, width: s.width, height: s.height,
+                                                               status: s.status), "\(c.name) suggestion ≠ placement")
+            }
+            if o.appearance != nil { XCTAssertNotNil(suggestion, "\(c.name): prepare ok, suggestPlacement failed") }
             guard let sigHex = c.expect.signature else { throw XCTSkip("manifest without expect.signature") }
 
             var co = EidPades.CompleteOptions(tsaUrl: "http://tsa.pki.test/", roots: [root],
@@ -195,7 +237,11 @@ final class GoldenTests: XCTestCase {
         }
         print("golden: \(full) full prepare+complete byte-identical (visible: \(m.cases.filter { $0.prepare.appearance != nil }.count)); skipped: \(skipped)")
         XCTAssertGreaterThanOrEqual(m.cases.filter { $0.prepare.appearance != nil }.count, 11)
-        XCTAssertEqual(m.cases.filter { $0.prepare.appearance != nil }.count, m.cases.filter { $0.expect.placement != nil }.count)
+        XCTAssertEqual(m.cases.filter { $0.prepare.appearance != nil && $0.expect.error == nil }.count,
+                       m.cases.filter { $0.expect.placement != nil }.count)
+        XCTAssertEqual(m.cases.filter { $0.prepare.appearance != nil }.count,
+                       m.cases.filter { $0.expect.suggestion != nil || $0.expect.suggestionError != nil }.count)
+        XCTAssertGreaterThanOrEqual(m.cases.filter { $0.prepare.appearance?.exact == true }.count, 5)
         XCTAssertEqual(full, m.cases.filter { $0.expect.error == nil }.count, "every non-error case must complete byte-identically")
         XCTAssertTrue(skipped.isEmpty)
     }

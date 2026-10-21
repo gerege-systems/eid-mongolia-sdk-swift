@@ -79,14 +79,21 @@ public enum EidPades {
         public var height: Double
         /// "mn" | "en"; nil → PrepareOptions.lang (nil → mn).
         public var lang: String?
+        /// Draw the stamp exactly at page/x/y/width/height (a position the signer chose, e.g. dragged on a page
+        /// preview): never moved off page content. `Placement.status` is then `.requested`, or `.overlap` when content
+        /// is under the rect (`.unscanned` when the page cannot be scanned) — never `.moved`. false (default) = x/y is
+        /// only the preferred spot (PLACEMENT_SPEC.md §6, §6a). The rect must lie inside the page (else REQUEST_INVALID).
+        public var exact: Bool
 
-        public init(page: Int = 0, x: Double, y: Double, width: Double, height: Double, lang: String? = nil) {
+        public init(page: Int = 0, x: Double, y: Double, width: Double, height: Double, lang: String? = nil,
+                    exact: Bool = false) {
             self.page = page
             self.x = x
             self.y = y
             self.width = width
             self.height = height
             self.lang = lang
+            self.exact = exact
         }
     }
 
@@ -119,6 +126,33 @@ public enum EidPades {
         public let width: Double
         public let height: Double
         public let status: Status
+    }
+
+    /// `suggestPlacement` result (Go `pades.Suggestion`, Android `PlacementSuggestion`, PLACEMENT_SPEC.md §6b), pt.
+    /// `page`, `x`, `y`, `width`, `height`, `status` are what `prepare` returns in `Prepared.placement` for the same PDF
+    /// and appearance. Coordinates: origin at the visible lower-left corner, x right, y up — a UI that renders the page
+    /// at `s` px/pt with a top-left origin maps `left = x·s`, `top = (pageHeight − y − height)·s`; back: `x = left/s`,
+    /// `y = pageHeight − top/s − height`, then prepare with `exact: true`.
+    public struct PlacementSuggestion: Sendable, Equatable {
+        /// A page's visible size (CropBox, else MediaBox, after /Rotate), pt; (0, 0) = geometry unreadable.
+        public struct PageSize: Sendable, Equatable {
+            public let width: Double
+            public let height: Double
+        }
+        /// 1-based page, resolved (appearance page 0 → PLACEMENT_SPEC §1a).
+        public let page: Int
+        public let x: Double
+        public let y: Double
+        public let width: Double
+        public let height: Double
+        public let status: Placement.Status
+        /// Visible size of `page`.
+        public let pageWidth: Double
+        public let pageHeight: Double
+        /// Pages in /Pages tree order.
+        public let pageCount: Int
+        /// Visible size of every page; index 0 = page 1.
+        public let pages: [PageSize]
     }
 
     public struct CompleteOptions: Sendable {
@@ -263,6 +297,46 @@ public enum EidPades {
         }
         return Prepared(dtbs: Data(CMS.dtbs(attrs)), digest: Data(prep.digest), docId: docID, state: Data(try st.encode()),
                         placement: placement)
+    }
+
+    // MARK: - suggestPlacement
+
+    /// Runs `prepare`'s placement (page 0 resolution, page scan, candidate search; `appearance.exact`) on `pdf` without
+    /// signing — no certificate, no network — so a UI can show the default stamp position, the page sizes, and whether a
+    /// chosen rect lies over content (Go `pades.SuggestPlacement`, PLACEMENT_SPEC.md §6b).
+    ///
+    /// Checks, in order: size (PDF_TOO_LARGE), `%PDF-` header and structure (PDF_INVALID), appearance values
+    /// (REQUEST_INVALID), encryption (PDF_ENCRYPTED), page > page count / page geometry / rect outside the page
+    /// (REQUEST_INVALID). Not checked here (`prepare` does): prior signatures (PDF_FOREIGN_SIGNATURE…), the signer
+    /// certificate, and whether the signer's name fits the stamp. Page 0 skips this document's eID verify pages using
+    /// the docId read from its verify page — for an unsigned document no page is skipped.
+    public static func suggestPlacement(pdf: Data, appearance a: SignatureAppearance) throws -> PlacementSuggestion {
+        let doc = [UInt8](pdf)
+        guard doc.count <= maxInputBytes else { throw EidPadesError(code: .pdfTooLarge, message: "PDF exceeds 9.75 MB") }
+        guard doc.starts(with: Array("%PDF-".utf8)) else { throw EidPadesError(code: .pdfInvalid, message: "not a PDF") }
+        do { try Structure.check(doc) } catch {
+            throw EidPadesError(code: .pdfInvalid, message: "PDF structure nested too deep or too complex")
+        }
+        try checkAppearance(PrepareOptions(signerCert: Data(), appearance: a))
+        let (r, _, sigs) = try Prechecks.open(doc)
+        var verifyURI = ""
+        if !sigs.isEmpty, let id = Prechecks.docIDFromPage(doc, reader: r) { verifyURI = Prechecks.verifyURLPrefix + id }
+        let w = Appearance.round100(a.width), h = Appearance.round100(a.height)
+        let s: (page: Int, result: StampPlacement.Result, sizes: [(w: Int, h: Int)?])
+        do {
+            s = try Appearance.suggest(doc, verifyURI: verifyURI, page: a.page, x: Appearance.round100(a.x),
+                                       y: Appearance.round100(a.y), w: w, h: h, exact: a.exact)
+        } catch let e as Appearance.Failure {
+            throw EidPadesError(code: .requestInvalid, message: "appearance: \(e)")
+        } catch {
+            throw EidPadesError(code: .pdfInvalid, message: "PDF: \(error)")
+        }
+        let pages = s.sizes.map { PlacementSuggestion.PageSize(width: Double($0?.w ?? 0) / 100, height: Double($0?.h ?? 0) / 100) }
+        return PlacementSuggestion(page: s.page, x: Double(s.result.x) / 100, y: Double(s.result.y) / 100,
+                                   width: Double(w) / 100, height: Double(h) / 100,
+                                   status: Placement.Status(rawValue: s.result.status.rawValue) ?? .unscanned,
+                                   pageWidth: pages[s.page - 1].width, pageHeight: pages[s.page - 1].height,
+                                   pageCount: pages.count, pages: pages)
     }
 
     // MARK: - complete
@@ -415,7 +489,8 @@ public enum EidPades {
             w: Appearance.round100(a.width), h: Appearance.round100(a.height),
             name: name.trimmingCharacters(in: .whitespacesAndNewlines), role: o.claimedRole ?? "",
             lang: a.lang?.nilIfEmpty ?? o.lang?.nilIfEmpty ?? "mn",
-            date: f.string(from: now) + " (+08)", url: Prechecks.verifyURLPrefix + docID + "/" + String(revIndex))
+            date: f.string(from: now) + " (+08)", url: Prechecks.verifyURLPrefix + docID + "/" + String(revIndex),
+            exact: a.exact)
     }
 
     static func parseRoots(_ ders: [Data]?) throws -> [X509Cert] {
