@@ -49,6 +49,11 @@ reference-тэй **ижил байт** гаргаж байгааг шалган�
   (overlap, not moved), `exact-free` (prepared bytes = `table-bottom-visible`), `exact-rotated90-on-footer`,
   `exact-page0-after-verify` (prepared bytes = `page0-after-verify`), `exact-out-of-bounds` (`REQUEST_INVALID`,
   `suggestionError` too). TSA fixtures `http/33`, `http/35…37`.
+- **v8** (`pades-golden-v8`, PLACEMENT_SPEC.md §1a «Object generations»): all v7 cases, outputs and HTTP fixtures are
+  byte-identical. New input `input/verify-gen1.pdf` (`go test ./pades/internal/core -run Placement -update-placement`):
+  the verify page, its docId Link and URI action are generation 1/2 objects. New cases: `verify-gen1` (first signature,
+  invisible), `page0-verify-gen1` (docId read from the generation-1 Link, page 1), `page-explicit-verify-gen1` (widget
+  on the generation-1 page, rewritten as `6 1 obj`). TSA fixtures `http/38…40`.
 - `placement/` — scanner conformance: `vectors.json` (exact occupancy box list + chosen position per input/request) and
   `placement/input/*.pdf` (one fixture per scanner rule). Native SDKs sync this folder too.
 - `ci/pyhanko_check.py` — гаралт бүрийг pyHanko-оор (CI job `golden-external`, qpdf `--check`-тэй хамт) шалгана.

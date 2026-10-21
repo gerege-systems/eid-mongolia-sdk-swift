@@ -18,6 +18,7 @@
     "POST http://tsa.pki.test/ 3c2df96fc90a78bd": "http/23-b11987ef3174.der",
     "POST http://tsa.pki.test/ 466c567599f24e6e": "http/07-1369ee615430.der",
     "POST http://tsa.pki.test/ 57f5397b454045bd": "http/08-40c7edd94f13.der",
+    "POST http://tsa.pki.test/ 5e144c4caf48911a": "http/38-6956119c99f4.der",
     "POST http://tsa.pki.test/ 6b8e51d6f594ee9c": "http/09-e556daafa098.der",
     "POST http://tsa.pki.test/ 738170c7ab14a8a8": "http/24-8f4b7df94839.der",
     "POST http://tsa.pki.test/ 7708bbf7c5e482ab": "http/29-8dcd4a20eab7.der",
@@ -33,8 +34,10 @@
     "POST http://tsa.pki.test/ aa998b61ba261478": "http/33-b5ebabfec58d.der",
     "POST http://tsa.pki.test/ acdec6b46401e83b": "http/18-cd7763c98dd0.der",
     "POST http://tsa.pki.test/ af79cd1447a8acb8": "http/15-63f81ab86074.der",
+    "POST http://tsa.pki.test/ b861c9b2cdb767e3": "http/39-229b3e577b11.der",
     "POST http://tsa.pki.test/ ce437db6d963f071": "http/35-afe9e68c1497.der",
     "POST http://tsa.pki.test/ cf4a802a1a62dde0": "http/19-210f84c7543b.der",
+    "POST http://tsa.pki.test/ d097fcafe1fb5a68": "http/40-8ed58b63261a.der",
     "POST http://tsa.pki.test/ d76c81c85467f00a": "http/36-175dbd2c5846.der",
     "POST http://tsa.pki.test/ dbce9b70b8a01cd7": "http/20-c8b7bdce3eae.der",
     "POST http://tsa.pki.test/ e393d7136f7f36e6": "http/21-907c56fced94.der",
@@ -1742,6 +1745,166 @@
           0
         ],
         "suggestionError": "REQUEST_INVALID"
+      }
+    },
+    {
+      "name": "verify-gen1",
+      "input": "input/verify-gen1.pdf",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "docId": "f5a6b7c8-d9e0-4f1a-8b2c-3d4e5f607182"
+      },
+      "expect": {
+        "inputSha256": "64e1f57faf26a440e515f8a9d678743f504277b9b092933a44ce4398df3f3538",
+        "docId": "f5a6b7c8-d9e0-4f1a-8b2c-3d4e5f607182",
+        "digest": "7170def0fc63c342a0b777ccff7192693b6a8bdce5783d4dc24acd120c2b486f",
+        "dtbs": "0c13c31fc4052263efd506720733ed6e3475c56ce75692935f43b3a4b0a83266",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d010904312204207170def0fc63c342a0b777ccff7192693b6a8bdce5783d4dc24acd120c2b486f308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "30ce73d527fe498e7dc00756d1dc5c9aa00a815db3c97b0967cd4f1da6634722d77daf4b29582a974e8d9abc89fead68063130edd5e2d1fcf1bb53bf40b1aea13ade8926c17bb64bcf3ca005c4d569af1c1d900dccfa0049e3c7860fd28fe20558ec82f8748211c0da7a423cb77a6c1720eb2ef1dde7ed48d57ac2f67337c0781dca8ac516235e9e02aafba218da9d1dba7b836a5d197a9d29bebef6dba9160edced9c3c5e16650ae84368983a71f9b7498d09ba60c9ea7b07f6e1f238c05600cadd285ae585adc5b13af68f5af1149f7703a17b3608d3a94334fa9772cd8dc47ba9e65e74eda5f5f83cbb23d9d70a01197902707907e29cca5c420587f3fcf4",
+        "preparedSha256": "fc7dbd288ddfa24a7c746b35eb698009309076a9e8ee67bbe3fb8d7ff0a884c7",
+        "byteRange": [
+          0,
+          2257,
+          59603,
+          640
+        ],
+        "outSha256": "2c5b432e2c2c12303ce7fc435810c9521565b60b2990be78645d9eb2b7b1ac19",
+        "revIndex": 1,
+        "sigRevSha256": "4e7ea50363eb206927c023e4e675dbbb493abe6126b6502f30fcc31b7b5e10ec",
+        "cmsSha256": "59708262a354c619f7c238163d3909f9b0493e545127f439a9f5a439b6b342b6"
+      }
+    },
+    {
+      "name": "page0-verify-gen1",
+      "input": "case:verify-gen1",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "lang": "en",
+        "appearance": {
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "2c5b432e2c2c12303ce7fc435810c9521565b60b2990be78645d9eb2b7b1ac19",
+        "docId": "f5a6b7c8-d9e0-4f1a-8b2c-3d4e5f607182",
+        "digest": "b5923986364296857e7ae2411f5b3a6bb21b63ba7407fba9ff3a3b4ce0db12c2",
+        "dtbs": "d619dc655c1c3f29d1eb185f7679d0bacf1fea78f258d17576a8f2c8e7b99fdb",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d01090431220420b5923986364296857e7ae2411f5b3a6bb21b63ba7407fba9ff3a3b4ce0db12c2308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "2902db883bcd5e1c96451eec12c1c3187dd85e6d3e1ce68b4ce2a4f9d812641bd4ac088a38274975f981c95acbc0a4030c6b295ddda8385e3e26d716c6623b141ce98252c09297f01e0c025e9509b2999a314b7a11e1388f052ee995451bd82a96fc50489249e48a0c1c7a1c7314b9d4d3b99a6ab2a34473b8812d688ff7a29ec01956647c5bd8adf72ac33cf99b2b02162f323440576b334b1c531c970991b5e96d519f3d89c65eff89e0d7eb28621840b37d5de1a633b6d77482185cc0905432d858ff39c9a70b1393c768ff1a14363c5ff04a3a7c74c7b11a1af78c17f238e3b2c4b41be205eea9f3fdab8b8f1341567ba54a9118a5663185851d07dfc02d",
+        "preparedSha256": "f9b86163be7f30aab2b0ad293e2bbb3c270d1192a1d02effd92f93526410bd57",
+        "byteRange": [
+          0,
+          69718,
+          127064,
+          107565
+        ],
+        "outSha256": "bc53dacb2f291aa7b59e51cdf5ec1e4ab734424fd6587010b2943796a78d76dd",
+        "revIndex": 2,
+        "sigRevSha256": "42bc53e1426f23bd3e53792648a77ccaa459dc3116d861603766500ffe9d1a32",
+        "cmsSha256": "e9f46da26a34a426c37570cd5b399e44e0d391ecc1769ba9a870c1ff680b0b07",
+        "priorCmsSha256": [
+          "59708262a354c619f7c238163d3909f9b0493e545127f439a9f5a439b6b342b6"
+        ],
+        "placement": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested"
+        },
+        "suggestion": {
+          "page": 1,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 612,
+              "height": 792
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "page-explicit-verify-gen1",
+      "input": "case:verify-gen1",
+      "prepare": {
+        "signerCert": null,
+        "signingTime": "0001-01-01T00:00:00Z",
+        "appearance": {
+          "page": 2,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64
+        }
+      },
+      "expect": {
+        "inputSha256": "2c5b432e2c2c12303ce7fc435810c9521565b60b2990be78645d9eb2b7b1ac19",
+        "docId": "f5a6b7c8-d9e0-4f1a-8b2c-3d4e5f607182",
+        "digest": "11eae47cfe7335d9043e36dddef7d781b4ddecc4dc29178d63cb5b223d54e517",
+        "dtbs": "0018d8b7038aa28be5c6ae4e80c00225f9ce4de95d477d2ca61f5d496b3f5cdd",
+        "signedAttrs": "3181d1301806092a864886f70d010903310b06092a864886f70d010701302f06092a864886f70d0109043122042011eae47cfe7335d9043e36dddef7d781b4ddecc4dc29178d63cb5b223d54e517308183060b2a864886f70d010910022f317430723070306e0420b241059e0db04b9531b777947e1ff9cea97d7b0cf1d0520ad0dee406a49a018f304a3044a4423040310b3009060355040613024d4e3131302f0603550403132854455354204f4e4c5920476f6c64656e20654944204d6f6e676f6c69612049737375696e67204341020203ed",
+        "signature": "2b145680dc189d5d72f8c59d8399ccd645d6ed3f6198aa51033cccccbb7b4d853aaab347ae24b436a0aa06760200494ef47fdd3bed2365cf5d6e72388da28d54d7c6860b56eb82a04f4ae262ef4e5fb92752d32fbb3672292b746f0d89c7370324c0a20d321e9dec531621cc86fff65f7461f1de3c891df298aab93f5da53a335731ff175633ccaf06076e78cd5c1f383e7b73f6382d6cc77fa99a673d32a2445b5fa0bbff2f1ad0e1ca7229b7c480f9345f620f8ae2125a7756a5c080976dce98b4587c6570bc37aeae629ca80b1ab4687f03d18ff81ccac09998f41ac458766bbb68e2cbf4ef67fb0840fac0a7fb1fd56dea8fa0375b1437fcffbb09a09096",
+        "preparedSha256": "ce142471589ed64d21e194d532aba082711edcb72b6c5b944bf7c3f2e8551fc5",
+        "byteRange": [
+          0,
+          69718,
+          127064,
+          107567
+        ],
+        "outSha256": "b3c090e69f81a4373770db76ea8236603068da6a2993f87367aa6862d6c59c50",
+        "revIndex": 2,
+        "sigRevSha256": "b31ef435bc7a8f0668a7b84d86b800b4d83f8066c3e71b26e9a9ab2eb4cad6d8",
+        "cmsSha256": "e23019562531c006a69c88fa1af201657d7bf6af7bc3319d460d545ebc39d392",
+        "priorCmsSha256": [
+          "59708262a354c619f7c238163d3909f9b0493e545127f439a9f5a439b6b342b6"
+        ],
+        "placement": {
+          "page": 2,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested"
+        },
+        "suggestion": {
+          "page": 2,
+          "x": 340,
+          "y": 36,
+          "width": 220,
+          "height": 64,
+          "status": "requested",
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "pageCount": 2,
+          "pages": [
+            {
+              "width": 612,
+              "height": 792
+            },
+            {
+              "width": 612,
+              "height": 792
+            }
+          ]
+        }
       }
     }
   ]

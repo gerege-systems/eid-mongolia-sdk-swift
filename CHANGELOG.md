@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1 — 2026-10-21
+
+### Fix — verify хуудасны docId-ийг бодит object generation-оор уншина (golden v8)
+
+- Өмнөх eID гарын үсгийн verify хуудасны Link (`/URI https://ca.eidmongolia.mn/verify/<docId>`) generation ≠ 0 объект
+  бол docId олдохгүй байсан (`page: 0` / дараагийн гарын үсэг `REQUEST_INVALID`). Одоо xref-ийн generation-оор —
+  Go reference ба Kotlin-той байт-ижил (`PLACEMENT_SPEC.md` §1a «Object generations»).
+- Golden = Go reference `pades-golden-v8` (+3 `*-gen1` кейс).
+
 ## 0.7.0 — 2026-10-21
 
 ### Go reference v0.14.0 (golden v7): `appearance.exact` + `suggestPlacement`

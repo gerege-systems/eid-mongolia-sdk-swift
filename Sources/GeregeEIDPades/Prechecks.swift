@@ -94,10 +94,13 @@ enum Prechecks {
     static func encryptedByScan(_ doc: [UInt8]) -> Bool { Structure.hasEncryptRef(doc) }
 
     /// docId from the first eID signature's verification page (/Link /URI https://ca.eidmongolia.mn/verify/<uuid>).
+    /// Objects in object-number order, each with the generation its xref entry records (PLACEMENT_SPEC §1a).
     static func docIDFromPage(_ doc: [UInt8], reader: PdfReader? = nil) -> String? {
         guard let r = reader ?? (try? PdfReader(doc)) else { return nil }
         for id in r.xref.keys.sorted() {
-            guard let d = (try? r.object(PdfRef(id: id, gen: 0)))?.dict,
+            let gen: Int
+            if case .offset(_, let g) = r.xref[id]! { gen = g } else { gen = 0 }
+            guard let d = (try? r.object(PdfRef(id: id, gen: gen)))?.dict,
                   (try? r.resolve(d["Subtype"]))?.nameValue == "Link",
                   let a = (try? r.resolve(d["A"]))?.dict, case .string(let u) = (try? r.resolve(a["URI"])) ?? .null else { continue }
             let s = String(decoding: u, as: UTF8.self)
