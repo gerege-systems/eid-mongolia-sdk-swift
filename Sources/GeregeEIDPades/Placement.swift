@@ -1015,7 +1015,8 @@ enum Occupancy {
     /// zlib (RFC 1950) inflate, strict: valid header, raw deflate to its final block, Adler-32 must match; bytes after
     /// the checksum are ignored. Truncation or any error → unscannable; output over `limit` → unscannable.
     /// (The system libz checks the header — CM 8, CINFO ≤ 7, FCHECK — and the Adler-32 trailer; FDICT as Go, below.)
-    static func inflate(_ input: [UInt8], limit: Int) throws -> [UInt8] {
+    /// `exactEnd`: bytes after the Adler-32 are an error too (Go `zlib.NewReader` on a `bytes.Reader` + `Len() == 0`).
+    static func inflate(_ input: [UInt8], limit: Int, exactEnd: Bool = false) throws -> [UInt8] {
         var s = z_stream()
         guard inflateInit_(&s, zlibVersion(), Int32(MemoryLayout<z_stream>.size)) == Z_OK else { throw Unscannable("inflateInit") }
         defer { inflateEnd(&s) }
@@ -1045,6 +1046,7 @@ enum Occupancy {
             }
         }
         guard rc == Z_STREAM_END else { throw Unscannable("FlateDecode (\(rc))") }
+        if exactEnd, s.avail_in != 0 { throw Unscannable("bytes after the zlib stream") }
         return out
     }
 }

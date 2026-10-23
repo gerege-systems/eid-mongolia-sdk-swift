@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.0 — 2026-10-23
+
+### Added — харагдах гарын үсэгт гарын үсгийн / байгууллагын тамганы зураг (`appearance.signatureImage` / `stampImage`)
+
+- `PdfImage {width, height, color, alpha (zlib), sha256}` — CA-ийн RP хариуны `pdfImage` (гарын үсгийн зураг:
+  `GET /v3/person/etsi/{etsi}/signature-image`; тамга: `representations[].stampImage.pdfImage`). Зураг дүрслэлийн `/AP /N`
+  form дотор зурагдана; `width = height = 0` → анхдагч хэмжээ 220×64 / 220×110 / 240×147.5. `stampImage` зөвхөн
+  `claimedRole`-той. Буруу оролт (alpha-ийн zlib FDICT, DICTID 1 ч) → `REQUEST_INVALID`. `Completed.images` → бүртгэлийн
+  `images`; CA одоогийн хадгалсан зурагтай таарахгүй бол 409 `IMAGE_MISMATCH`. Golden = Go reference v0.16.0
+  (`pades-golden-v10`).
+
 ## 0.8.0 — 2026-10-21
 
 ### Added — `PrepareOptions.verifyPagePosition` ("last" | "first")

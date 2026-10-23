@@ -19,15 +19,17 @@ struct State: Codable {
     var fileName: String?
     var preparedSha256: String
     var pdf: [UInt8] = []
+    /// PNG sha256 of the images drawn in the stamp (Go `prepState.Images` → Completed.images → registration).
+    var images: [EidPades.SignatureImage] = []
 
     enum CodingKeys: String, CodingKey {
         case docId, signerCert, chain, signedAttrs, byteRange, revIndex, inSha256, hasPage, pageSha256, claimedRole,
-             fileName, preparedSha256
+             fileName, images, preparedSha256
     }
 
     init(docId: String, signerCert: [UInt8], chain: [[UInt8]], signedAttrs: [UInt8], byteRange: [Int], revIndex: Int,
          inSha256: String, hasPage: Bool, pageSha256: String?, claimedRole: String?, fileName: String? = nil,
-         preparedSha256: String, pdf: [UInt8]) {
+         preparedSha256: String, pdf: [UInt8], images: [EidPades.SignatureImage] = []) {
         self.docId = docId
         self.signerCert = signerCert
         self.chain = chain
@@ -41,6 +43,7 @@ struct State: Codable {
         self.fileName = fileName
         self.preparedSha256 = preparedSha256
         self.pdf = pdf
+        self.images = images
     }
 
     // []byte as base64 strings (Go encoding/json).
@@ -61,6 +64,7 @@ struct State: Codable {
         pageSha256 = try c.decodeIfPresent(String.self, forKey: .pageSha256)
         claimedRole = try c.decodeIfPresent(String.self, forKey: .claimedRole)
         fileName = try c.decodeIfPresent(String.self, forKey: .fileName)
+        images = try c.decodeIfPresent([EidPades.SignatureImage].self, forKey: .images) ?? []
         preparedSha256 = try c.decode(String.self, forKey: .preparedSha256)
     }
 
@@ -77,6 +81,7 @@ struct State: Codable {
         try c.encodeIfPresent(pageSha256, forKey: .pageSha256)
         try c.encodeIfPresent(claimedRole, forKey: .claimedRole)
         try c.encodeIfPresent(fileName, forKey: .fileName)
+        if !images.isEmpty { try c.encode(images, forKey: .images) }
         try c.encode(preparedSha256, forKey: .preparedSha256)
     }
 

@@ -25,6 +25,9 @@ final class GoldenTests: XCTestCase {
             var height: Double
             var lang: String?
             var exact: Bool?
+            /// APPEARANCE_SPEC.md §6 (golden v10).
+            var signatureImage: EidPades.PdfImage?
+            var stampImage: EidPades.PdfImage?
         }
         struct Prep: Decodable {
             var appearance: Appearance?
@@ -152,7 +155,8 @@ final class GoldenTests: XCTestCase {
                 fileName: c.prepare.fileName, lang: c.prepare.lang,
                 appearance: c.prepare.appearance.map {
                     EidPades.SignatureAppearance(page: $0.page ?? 0, x: $0.x, y: $0.y, width: $0.width, height: $0.height,
-                                                 lang: $0.lang, exact: $0.exact ?? false)
+                                                 lang: $0.lang, exact: $0.exact ?? false,
+                                                 signatureImage: $0.signatureImage, stampImage: $0.stampImage)
                 }, verifyPagePosition: c.prepare.verifyPagePosition)
             // suggestPlacement (PLACEMENT_SPEC §6b) field-for-field, before prepare (Go golden_test order).
             var suggestion: EidPades.PlacementSuggestion?
@@ -230,6 +234,7 @@ final class GoldenTests: XCTestCase {
                 XCTAssertEqual(done.priorRevisionSha256, revisions(c.input), "\(c.name) priorRevision")
                 XCTAssertEqual(done.signerCert, citizen, c.name)
                 try checkRegistration(done, c)
+                if c.name.hasPrefix("img-") { print("golden \(c.name): prepare+complete byte-identical") }
                 outputs[c.name] = done.pdf
                 full += 1
             } catch let e as EidPadesError {
@@ -278,11 +283,18 @@ final class GoldenTests: XCTestCase {
         XCTAssertNil(r.priorRevisionSha256, c.name)
         XCTAssertEqual(r.priorSignatures.map(\.revisionSha256), done.priorRevisionSha256, c.name)
         XCTAssertEqual(r.signerEtsi, "PNOMN-00000000000", c.name)
+        // APPEARANCE_SPEC.md §6.6: the stamp's images (signature, then stamp) → `images`; none → not sent.
+        let a = c.prepare.appearance
+        let want = [a?.signatureImage.map { EidPades.SignatureImage(kind: .signature, sha256: $0.sha256) },
+                    a?.stampImage.map { EidPades.SignatureImage(kind: .stamp, sha256: $0.sha256) }].compactMap { $0 }
+        XCTAssertEqual(done.images, want, c.name)
+        XCTAssertEqual(r.images, want.isEmpty ? nil : want, c.name)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(r)) as? [String: Any])
         XCTAssertEqual(Set(json.keys), Set(["docID", "revIndex", "medium", "sessionID", "cms", "fileName", "inSha256",
                                             "sigRevSha256", "outSha256", "signerEtsi"]
                                            + (done.revIndex == 1 ? ["pageSha256"] : ["priorCmsSha256"])
-                                           + (obo == nil ? [] : ["onBehalfOf"])), c.name)
+                                           + (obo == nil ? [] : ["onBehalfOf"])
+                                           + (want.isEmpty ? [] : ["images"])), c.name)
         XCTAssertEqual(json["medium"] as? String, "phone")
     }
 }

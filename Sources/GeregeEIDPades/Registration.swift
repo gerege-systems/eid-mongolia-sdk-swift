@@ -37,12 +37,15 @@ extension EidPades {
         public var onBehalfOf: String?
         /// Signer certificate SERIALNUMBER (PNOMN-…); the CA checks it against the CMS signer.
         public var signerEtsi: String?
+        /// The images drawn in the stamp, {kind, sha256} (APPEARANCE_SPEC.md §6.6): the CA matches them against the
+        /// signer's / organization's stored PNG. nil (not sent) without images.
+        public var images: [EidPades.SignatureImage]?
         /// SDK-only (never encoded): every prior signature's CMS and revision hash, document order.
         public var priorSignatures: [PriorSignature] = []
 
         enum CodingKeys: String, CodingKey {
             case docID, revIndex, medium, sessionID, cms, fileName, inSha256, pageSha256, sigRevSha256, outSha256,
-                 priorCmsSha256, priorRevisionSha256, onBehalfOf, signerEtsi
+                 priorCmsSha256, priorRevisionSha256, onBehalfOf, signerEtsi, images
         }
     }
 }
@@ -79,6 +82,7 @@ extension EidPades.Completed {
             docID: docId, revIndex: revIndex, medium: medium, sessionID: session, cms: cms.base64EncodedString(),
             fileName: fileName, inSha256: inSha256, pageSha256: revIndex == 1 ? pageSha256 : nil,
             sigRevSha256: sigRevSha256, outSha256: outSha256, onBehalfOf: onBehalfOf?.nilIfEmpty)
+        if !images.isEmpty { r.images = images }
         if !priorCmsSha256.isEmpty {
             r.priorCmsSha256 = priorCmsSha256
             if priorRevisionSha256.count == priorCmsSha256.count {
