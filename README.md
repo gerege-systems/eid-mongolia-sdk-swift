@@ -15,7 +15,7 @@
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.9.0")
+    .package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.10.0")
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -57,11 +57,6 @@ let body = try JSONEncoder().encode(done.registration(medium: .phone, sessionId:
   `suggestPlacement`, `placement.page` оролтын PDF-ийн хуудсаар тоологдоно (`PAGE_SPEC.md` §8a, `PLACEMENT_SPEC.md` §1b).
 - `complete`: иргэний гарын үсгийг DTBS дээр шалгана (RSA PKCS#1 v1.5, ECDSA) → RFC 3161 → CMS → embed →
   OCSP/CRL → DSS revision.
-- **Зураг** (0.9.0+, golden v10): `appearance.signatureImage` / `stampImage` — `PdfImage(width, height, color, alpha, sha256)` = CA-ийн RP хариуны
-  `pdfImage` (гарын үсэг: `GET /v3/person/etsi/{etsi}/signature-image` — SIGN эрх + иргэнийг сүүлийн 24 цагт нэвтрүүлсэн;
-  тамга: `representations[].stampImage.pdfImage`, зөвхөн `claimedRole`-той). `alpha`-г байтаар нь ашиглана (дахин шахахгүй).
-  width = height = 0 → анхдагч 220×110 (гарын үсэг) / 240×147.5 (тамга). `Completed.images` → бүртгэлийн `images`; CA
-  одоогийн хадгалсан зурагтай таарахгүй бол 409 `IMAGE_MISMATCH`.
 - **Харагдах гарын үсэг** (сонголттой, Go `APPEARANCE_SPEC.md`): `PrepareOptions.appearance = .init(page: 0, x: 36, y: 36,
   width: 220, height: 64)` — pt, хуудасны харагдах (`/Rotate`-ийн дараах) зүүн доод булангаас; `page` 0 = оролтын eID
   verify хуудас **биш** сүүлийн хуудас (өмнөх гарын үсгүүдийн verify хуудсыг алгасна; `PLACEMENT_SPEC.md` §1a),
@@ -122,5 +117,5 @@ and returns a 32-byte DTBS to be signed by the citizen's phone or USB token; `co
 RFC 3161 timestamp, OCSP/CRL and DSS (PAdES B-LT). Output is byte-identical to the Go reference
 (`gerege-systems/eid-mongolia-sdk-go`, profile `pades-client/1`), enforced by golden vectors in CI.
 iOS 14+ / macOS 13+, no third-party dependencies. Install via SwiftPM:
-`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.9.0")` (use the latest tag), product
+`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.10.0")` (use the latest tag), product
 `GeregeEIDPades`. This repository is a read-only mirror; please file issues here.

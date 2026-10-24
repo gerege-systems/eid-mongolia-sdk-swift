@@ -61,15 +61,6 @@ reference-тэй **ижил байт** гаргаж байгааг шалган�
   is page 1 → its last page, 3), `vpfirst-second-explicit-verify` (`page: 1` there = the front verify page, kept),
   `vpfirst-nopage` (no page added → prepared bytes = `quartz-pdf13-nopage`), `vpfirst-invalid` (`"middle"` →
   `REQUEST_INVALID`). TSA fixtures `http/41…47`.
-- **v10** (`pades-golden-v10`, APPEARANCE_SPEC.md §6, PLACEMENT_SPEC.md §6c): signature / organization-stamp images
-  inside the stamp. All v9 cases, outputs and HTTP fixtures are byte-identical. `prepare.appearance.signatureImage` /
-  `stampImage` carry the synthetic images inline (`{width, height, color, alpha (base64 zlib), sha256}` — drawn by
-  `pades/testimages_test.go`; the manifest is the contract, the zlib bytes there are input, not something ports
-  produce). New cases: `img-signature` (signature image, default 220×110), `img-signature-stamp` (both, onBehalfOf,
-  default 240×147.5), `img-stamp-only` (en), `img-rotated90` (`/Rotate 90`, both), `img-second` (second signer with both
-  images after `img-signature`, same page — pyHanko: first signature `FORM_FILLING`), `img-bad-alpha` (alpha one byte
-  short → `REQUEST_INVALID`, `suggestionError` too), `img-stamp-no-role` (`stampImage` without `claimedRole` →
-  `REQUEST_INVALID`; the suggestion succeeds). TSA fixtures `http/48…52`.
 - `placement/` — scanner conformance: `vectors.json` (exact occupancy box list + chosen position per input/request) and
   `placement/input/*.pdf` (one fixture per scanner rule). Native SDKs sync this folder too.
 - `ci/pyhanko_check.py` — гаралт бүрийг pyHanko-оор (CI job `golden-external`, qpdf `--check`-тэй хамт) шалгана.

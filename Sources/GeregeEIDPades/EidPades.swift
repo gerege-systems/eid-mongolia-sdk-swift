@@ -74,8 +74,7 @@ public enum EidPades {
 
     /// Visible signature placement (Go `pades.Appearance`, APPEARANCE_SPEC.md §1). Points, from the bottom-left corner
     /// of the page's CropBox (else MediaBox) as DISPLAYED (after /Rotate); x to the right, y up; rounded to 0.01 pt.
-    /// Height ≥ 45 pt (QR), else REQUEST_INVALID. width = height = 0 → the default size (APPEARANCE_SPEC §6.3):
-    /// 220 × 64, with `signatureImage` 220 × 110, with `stampImage` 240 × 147.5.
+    /// Height ≥ 45 pt (QR), else REQUEST_INVALID.
     public struct SignatureAppearance: Sendable, Equatable {
         /// Input document page, 1-based (an explicit number is kept as is); 0 = the input's last page that is not an eID
         /// verify page — neither this prepare's verify page nor earlier revisions' ones count (PLACEMENT_SPEC §1a).
@@ -91,16 +90,9 @@ public enum EidPades {
         /// is under the rect (`.unscanned` when the page cannot be scanned) — never `.moved`. false (default) = x/y is
         /// only the preferred spot (PLACEMENT_SPEC.md §6, §6a). The rect must lie inside the page (else REQUEST_INVALID).
         public var exact: Bool
-        /// The signer's handwritten-signature image (CA: GET /v3/person/etsi/{etsi}/signature-image) drawn inside the
-        /// stamp (APPEARANCE_SPEC.md §6). nil = none (byte-identical to golden v9).
-        public var signatureImage: PdfImage?
-        /// The organization's stamp image (CA: representations[].stampImage); only with `PrepareOptions.claimedRole`
-        /// (onBehalfOf), REQUEST_INVALID otherwise. The round stamp overlaps the box top-right and sticks out above it —
-        /// width/height are the whole widget rect (APPEARANCE_SPEC.md §6.3).
-        public var stampImage: PdfImage?
 
-        public init(page: Int = 0, x: Double, y: Double, width: Double = 0, height: Double = 0, lang: String? = nil,
-                    exact: Bool = false, signatureImage: PdfImage? = nil, stampImage: PdfImage? = nil) {
+        public init(page: Int = 0, x: Double, y: Double, width: Double, height: Double, lang: String? = nil,
+                    exact: Bool = false) {
             self.page = page
             self.x = x
             self.y = y
@@ -108,62 +100,7 @@ public enum EidPades {
             self.height = height
             self.lang = lang
             self.exact = exact
-            self.signatureImage = signatureImage
-            self.stampImage = stampImage
         }
-    }
-
-    /// A "PDF image" as the CA serves it (Go `pades.PDFImage`, APPEARANCE_SPEC.md §6.1): one ink colour + an 8-bit alpha
-    /// channel. The SDK writes `alpha` into the PDF verbatim (/SMask, /FlateDecode) — nothing is compressed at runtime.
-    /// Decodable from the CA JSON `{width, height, color, alpha (base64), sha256}`.
-    public struct PdfImage: Sendable, Equatable, Codable {
-        /// px, 1…1600.
-        public var width: Int
-        public var height: Int
-        /// [r, g, b], 0…255.
-        public var color: [Int]
-        /// zlib stream (RFC 1950, no preset dictionary, nothing after the Adler-32) inflating to exactly width·height
-        /// bytes, rows top-down, no PNG filter bytes; ≤ 300 KiB. JSON: base64.
-        public var alpha: Data
-        /// Lowercase hex SHA-256 of the PNG the CA stores; not written into the PDF, carried to the registration
-        /// (`Completed.images` → `images`).
-        public var sha256: String
-
-        public init(width: Int, height: Int, color: [Int], alpha: Data, sha256: String) {
-            self.width = width
-            self.height = height
-            self.color = color
-            self.alpha = alpha
-            self.sha256 = sha256
-        }
-
-        var core: Appearance.Image { Appearance.Image(w: width, h: height, color: color, alpha: [UInt8](alpha)) }
-    }
-
-    /// One image drawn in a signature's stamp (Go `eid.PDFSignatureImage`): `Completed.images`, registration `images`.
-    public struct SignatureImage: Sendable, Equatable, Codable {
-        public enum Kind: String, Sendable, Codable {
-            /// The citizen's handwritten-signature image.
-            case signature
-            /// The organization's stamp image.
-            case stamp
-        }
-        public let kind: Kind
-        /// SHA-256 (64 lowercase hex) of the PNG the CA stores.
-        public let sha256: String
-    }
-
-    /// Default stamp sizes (pt) when `SignatureAppearance.width` and `height` are both 0 (APPEARANCE_SPEC.md §6.3).
-    public static let defaultStampSize = (width: 220.0, height: 64.0)
-    public static let defaultSignatureStampSize = (width: 220.0, height: 110.0)
-    public static let defaultOrgStampSize = (width: 240.0, height: 147.5)
-
-    /// Go `appearanceSize`: width/height, or the default for the images when both are 0.
-    static func appearanceSize(_ a: SignatureAppearance) -> (width: Double, height: Double) {
-        if a.width != 0 || a.height != 0 { return (a.width, a.height) }
-        if a.stampImage != nil { return defaultOrgStampSize }
-        if a.signatureImage != nil { return defaultSignatureStampSize }
-        return defaultStampSize
     }
 
     public struct Prepared: Sendable, Equatable {
@@ -276,9 +213,6 @@ public enum EidPades {
         /// `PrepareOptions.claimedRole` carried through the state; nil when the signature is personal. `registration`
         /// requires `onBehalfOf` when this is set (the CA rejects a claimed role without an organisation).
         public var claimedRole: String? = nil
-        /// The images drawn in this signature's stamp (`signatureImage`, then `stampImage`) as {kind, sha256};
-        /// `registration` sends them as `images` (APPEARANCE_SPEC.md §6.6). Empty without images.
-        public var images: [SignatureImage] = []
     }
 
     // MARK: - prepare
@@ -308,9 +242,6 @@ public enum EidPades {
         }
         let first = o.verifyPagePosition == "first"
         try checkAppearance(o)
-        if o.appearance?.stampImage != nil, o.claimedRole?.isEmpty ?? true {
-            throw EidPadesError(code: .requestInvalid, message: "appearance: stampImage only with claimedRole (onBehalfOf)")
-        }
         let now = o.signingTime ?? Date()
         let inHex = Crypto.hex(Crypto.sha256(doc))
         let fileName = cleanFileName(o.fileName ?? "")
@@ -371,8 +302,7 @@ public enum EidPades {
         let st = State(docId: docID, signerCert: cert.raw, chain: chain.map(\.raw), signedAttrs: attrs,
                        byteRange: prep.byteRange, revIndex: revIndex, inSha256: inHex, hasPage: hasPage,
                        pageSha256: pageHex.isEmpty ? nil : pageHex, claimedRole: o.claimedRole?.nilIfEmpty,
-                       fileName: fileName, preparedSha256: Crypto.hex(Crypto.sha256(prep.pdf)), pdf: prep.pdf,
-                       images: imageRefs(o.appearance))
+                       fileName: fileName, preparedSha256: Crypto.hex(Crypto.sha256(prep.pdf)), pdf: prep.pdf)
         var placement: Placement?
         if let vis = visible, let pl = prep.placement {
             placement = Placement(page: vis.page, x: Double(pl.x) / 100, y: Double(pl.y) / 100, width: Double(vis.w) / 100,
@@ -404,8 +334,7 @@ public enum EidPades {
         let (r, _, sigs) = try Prechecks.open(doc)
         var verifyURI = ""
         if !sigs.isEmpty, let id = Prechecks.docIDFromPage(doc, reader: r) { verifyURI = Prechecks.verifyURLPrefix + id }
-        let (aw, ah) = appearanceSize(a)
-        let w = Appearance.round100(aw), h = Appearance.round100(ah)
+        let w = Appearance.round100(a.width), h = Appearance.round100(a.height)
         let s: (page: Int, result: StampPlacement.Result, sizes: [(w: Int, h: Int)?])
         do {
             s = try Appearance.suggest(doc, verifyURI: verifyURI, page: a.page, x: Appearance.round100(a.x),
@@ -496,8 +425,7 @@ public enum EidPades {
                          sigRevSha256: Crypto.hex(Crypto.sha256(signed)),
                          priorCmsSha256: prior.map { Crypto.hex(Crypto.sha256($0.cms)) },
                          priorRevisionSha256: prior.map { Crypto.hex(Crypto.sha256(Array(signed[0..<$0.end]))) },
-                         signerCert: Data(cert.raw), fileName: st.fileName, claimedRole: st.claimedRole?.nilIfEmpty,
-                         images: st.images)
+                         signerCert: Data(cert.raw), fileName: st.fileName, claimedRole: st.claimedRole?.nilIfEmpty)
     }
 
     /// Light self-check of the output (no full validator — Go runs the CA validator here): the document parses, its
@@ -551,22 +479,6 @@ public enum EidPades {
            role.unicodeScalars.contains(where: { [.control, .format].contains($0.properties.generalCategory) }) {
             throw bad("claimedRole contains control characters")
         }
-        for (name, im) in [("signatureImage", a.signatureImage), ("stampImage", a.stampImage)] {
-            guard let im else { continue }
-            guard im.sha256.range(of: "^[0-9a-f]{64}$", options: .regularExpression) != nil else {
-                throw bad(name + ".sha256: lowercase hex SHA-256")
-            }
-            do { try Appearance.checkImage(im.core) } catch { throw bad(name + ": \(error)") }
-        }
-    }
-
-    /// Completed.images (APPEARANCE_SPEC.md §6.6): signatureImage, then stampImage.
-    static func imageRefs(_ a: SignatureAppearance?) -> [SignatureImage] {
-        guard let a else { return [] }
-        var out: [SignatureImage] = []
-        if let im = a.signatureImage { out.append(SignatureImage(kind: .signature, sha256: im.sha256)) }
-        if let im = a.stampImage { out.append(SignatureImage(kind: .stamp, sha256: im.sha256)) }
-        return out
     }
 
     /// Go `visibleSpec`: page (0 → the last page that is not an eID verify page, PLACEMENT_SPEC §1a), h100, language, +08 date, verify URL.
@@ -585,14 +497,13 @@ public enum EidPades {
         f.locale = Locale(identifier: "en_US_POSIX")
         f.timeZone = TimeZone(secondsFromGMT: 8 * 3600)
         f.dateFormat = "yyyy-MM-dd HH:mm"
-        let (w, h) = appearanceSize(a)
         return Appearance.Visible(
             page: page, x: Appearance.round100(a.x), y: Appearance.round100(a.y),
-            w: Appearance.round100(w), h: Appearance.round100(h),
+            w: Appearance.round100(a.width), h: Appearance.round100(a.height),
             name: name.trimmingCharacters(in: .whitespacesAndNewlines), role: o.claimedRole ?? "",
             lang: a.lang?.nilIfEmpty ?? o.lang?.nilIfEmpty ?? "mn",
             date: f.string(from: now) + " (+08)", url: Prechecks.verifyURLPrefix + docID + "/" + String(revIndex),
-            exact: a.exact, sig: a.signatureImage?.core, stamp: a.stampImage?.core)
+            exact: a.exact)
     }
 
     static func parseRoots(_ ders: [Data]?) throws -> [X509Cert] {

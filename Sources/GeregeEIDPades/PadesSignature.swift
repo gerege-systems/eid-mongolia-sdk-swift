@@ -62,8 +62,8 @@ enum PadesSignature {
         let fieldName = "Signature \(k)"
 
         let sigID = inc.reserve(), fieldID = inc.reserve(), catID = inc.reserve()
-        // Visible: form, F1 ×5, F2 ×5, 2 per image (APPEARANCE_SPEC.md §6.2).
-        let apIDs = visible.map { v in (0..<Appearance.objectCount(sig: v.sig, stamp: v.stamp)).map { _ in inc.reserve() } } ?? []
+        // Visible: form, F1 ×5, F2 ×5.
+        let apIDs = visible == nil ? [] : (0..<11).map { _ in inc.reserve() }
 
         // ── /Sig dictionary (placeholder) ──
         var sig = "<<\n /Type /Sig\n /Filter /Adobe.PPKLite\n /SubFilter /\(subFilter)\n /ByteRange "
@@ -90,8 +90,7 @@ enum PadesSignature {
                                                                    w: vis.w, h: vis.h, exact: vis.exact)
             placement = placed
             let bodies = try Appearance.objects(Appearance.Params(w: vis.w, h: vis.h, rotate: rot, name: vis.name, role: vis.role,
-                                                                  lang: vis.lang, date: vis.date, url: vis.url,
-                                                                  sig: vis.sig, stamp: vis.stamp), ids: apIDs)
+                                                                  lang: vis.lang, date: vis.date, url: vis.url), ids: apIDs)
             inc.writeObject(fieldID, Appearance.widget(fieldName: fieldName, rect: rect, page: p.ref, sigID: sigID, formID: apIDs[0]))
             for (i, b) in bodies.enumerated() { inc.writeObject(apIDs[i], b) }
             page = p
