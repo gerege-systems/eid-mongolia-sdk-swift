@@ -61,6 +61,13 @@ reference-тэй **ижил байт** гаргаж байгааг шалган�
   is page 1 → its last page, 3), `vpfirst-second-explicit-verify` (`page: 1` there = the front verify page, kept),
   `vpfirst-nopage` (no page added → prepared bytes = `quartz-pdf13-nopage`), `vpfirst-invalid` (`"middle"` →
   `REQUEST_INVALID`). TSA fixtures `http/41…47`.
+- **v11** (`pades-golden-v11`, PROFILE.md §8 — revocation order by certificate role; v10 was withdrawn): end-entity
+  certificates (citizen, TSA) — OCSP first, CRL still fetched and embedded as well; CA certificates (04/03/02) — CRL
+  first, and with a valid CRL **no OCSP request** is sent. The DSS loses the 04 OCSP response (`/OCSPs` 3 → 2; `/Certs`
+  and `/CRLs` unchanged). Same 44 cases; prepare expectations unchanged except for the 14 cases whose input is a previous
+  output (`case:…`, re-signed: new TSA fixtures `http/48…61`); `outSha256` changes for all 40 completed cases, the 4
+  error cases are unchanged. Removed fixtures: `POST http://ocsp.pki.test/03` and the 14 superseded TSA responses.
+  Regenerated with `go test ./pades -run Golden -update` on the CI runner (PR #61).
 - `placement/` — scanner conformance: `vectors.json` (exact occupancy box list + chosen position per input/request) and
   `placement/input/*.pdf` (one fixture per scanner rule). Native SDKs sync this folder too.
 - `ci/pyhanko_check.py` — гаралт бүрийг pyHanko-оор (CI job `golden-external`, qpdf `--check`-тэй хамт) шалгана.

@@ -5,6 +5,12 @@ import Foundation
 /// (`Revocation.freshAt` at the current time); fail-closed when a certificate has no valid revocation data. The leaf
 /// OCSP must be produced after the timestamp (thisUpdate > genTime). An issuer-signed "revoked" answer (OCSP or CRL)
 /// throws `CertificateRevoked` at once — no other URL/CRL is tried for a "good" answer, no retry.
+///
+/// Order by certificate role: the first certificate of each chain (end entity — signer, TSA) asks its OCSP first (full
+/// timeout, freshness/retry rule) and then its CRL, as before. A CA certificate (every later position) fetches its CRL
+/// first and sends no OCSP request at all when a valid CRL is obtained; only without one does it fall back to its OCSP
+/// (full timeout). A CA OCSP responder that accepts the connection and never answers then no longer stalls signing.
+/// Caller cancellation is propagated (`CancellationError`) instead of reading as missing revocation data.
 enum LTV {
     struct NotFresh: Error, CustomStringConvertible {
         let ref: String
@@ -50,30 +56,44 @@ enum LTV {
                 var ok = false
                 var stale = false
                 let fresh: Date? = i == 0 ? after : nil
-                for u in c.ocspServers {
-                    let der: [UInt8], r: OCSP.Response
-                    do {
-                        (der, r) = try await fetchOCSP(f, u, cert: c, issuer: issuer, now: now, after: fresh)
-                    } catch let e as CertificateRevoked {
-                        throw e
-                    } catch is NotFresh {
-                        stale = true
-                        continue
-                    } catch {
-                        continue
-                    }
-                    if !m.ocsps.contains(der) { m.ocsps.append(der) }
-                    if let rc = r.certificate, rc != issuer { addCert(rc) }  // delegated responder
-                    ok = true
-                    break
-                }
-                for u in c.crlDistributionPoints {
-                    guard let der = try? await f.fetch("GET", u) else { continue }
-                    if try CRL.covers(der, cert: c, issuer: issuer, now: now) {
-                        if !m.crls.contains(der) { m.crls.append(der) }
+                func ocsp() async throws {
+                    for u in c.ocspServers {
+                        let der: [UInt8], r: OCSP.Response
+                        do {
+                            (der, r) = try await fetchOCSP(f, u, cert: c, issuer: issuer, now: now, after: fresh)
+                        } catch let e as CertificateRevoked {
+                            throw e
+                        } catch is NotFresh {
+                            stale = true
+                            continue
+                        } catch {
+                            continue
+                        }
+                        if !m.ocsps.contains(der) { m.ocsps.append(der) }
+                        if let rc = r.certificate, rc != issuer { addCert(rc) }  // delegated responder
                         ok = true
+                        break
                     }
                 }
+                func crls() async throws {
+                    for u in c.crlDistributionPoints {
+                        guard let der = try? await f.fetch("GET", u) else { continue }
+                        if try CRL.covers(der, cert: c, issuer: issuer, now: now) {
+                            if !m.crls.contains(der) { m.crls.append(der) }
+                            ok = true
+                        }
+                    }
+                }
+                if i == 0 {
+                    // End entity (signer / TSA leaf): OCSP first, full timeout, then the CRL — unchanged.
+                    try await ocsp()
+                    try await crls()
+                } else {
+                    // CA certificate: CRL first; no OCSP request at all when a valid CRL is obtained.
+                    try await crls()
+                    if !ok { try await ocsp() }
+                }
+                try Task.checkCancellation()
                 if !ok {
                     if stale { throw NotFresh(ref: c.serialRef) }
                     throw DERError("LTV: no valid OCSP/CRL for \(c.serialRef)")
