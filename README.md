@@ -1,3 +1,5 @@
+Монгол · [English](README.en.md) · [中文](README.zh-CN.md)
+
 # eID Mongolia — PAdES SDK (Swift)
 
 `GeregeEIDPades` — eID Mongolia-ийн **client-side PAdES** (PDF гарын үсэг) Swift сан. PDF хэзээ ч eID сервер рүү
@@ -108,14 +110,4 @@ GitHub Issues-д бичнэ үү; PR-ийг дотоод репод шилжүү
 
 MIT — [LICENSE](LICENSE). Фонт: SIL Open Font License 1.1 (`Sources/GeregeEIDPades/Resources/fonts/OFL.txt`).
 
----
-
-### English
-
-Client-side PAdES signing for eID Mongolia. The PDF never leaves the device: `prepare` builds the signature revision
-and returns a 32-byte DTBS to be signed by the citizen's phone or USB token; `complete` embeds the signature with an
-RFC 3161 timestamp, OCSP/CRL and DSS (PAdES B-LT). Output is byte-identical to the Go reference
-(`gerege-systems/eid-mongolia-sdk-go`, profile `pades-client/1`), enforced by golden vectors in CI.
-iOS 14+ / macOS 13+, no third-party dependencies. Install via SwiftPM:
-`.package(url: "https://github.com/gerege-systems/eid-mongolia-sdk-swift.git", from: "0.10.1")` (use the latest tag), product
-`GeregeEIDPades`. This repository is a read-only mirror; please file issues here.
+English: [README.en.md](README.en.md) · 中文: [README.zh-CN.md](README.zh-CN.md)
