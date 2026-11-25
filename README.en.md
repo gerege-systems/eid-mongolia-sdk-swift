@@ -35,11 +35,11 @@ Xcode: **File → Add Package Dependencies…** → `https://github.com/gerege-s
 ```swift
 import GeregeEIDPades
 
-// 1) Сүлжээгүй: PDF-ийг бэлдэж DTBS гаргана
-// verifyPage: true бол fileName заавал (эс бөгөөс REQUEST_INVALID); эхний eID гарын үсгийг CA зөвхөн хуудастай бүртгэнэ
+// 1) No network: prepare the PDF and produce the DTBS
+// with verifyPage: true, fileName is required (otherwise REQUEST_INVALID); the CA registers the first eID signature only together with its page
 let prepared = try EidPades.prepare(pdf: pdf, options: .init(signerCert: signCertDER, verifyPage: true,
-                                                             fileName: "Гэрээ №1.pdf"))
-// prepared.state-ийг хадгалж болно; prepared.dtbs-ийг (32 байт) утас/токеноор гарын үсэглүүлнэ
+                                                             fileName: "Contract No. 1.pdf"))
+// prepared.state can be stored; have prepared.dtbs (32 bytes) signed by the phone/token
 
 // 2) TSA + OCSP/CRL + DSS
 let done = try await EidPades.complete(state: prepared.state, signature: sig)
@@ -47,9 +47,9 @@ let done = try await EidPades.complete(state: prepared.state, signature: sig)
 // done.revIndex, done.sigRevSha256, done.priorCmsSha256, done.priorRevisionSha256, done.signerCert, done.fileName,
 // done.claimedRole
 let body = try JSONEncoder().encode(done.registration(medium: .phone, sessionId: sessionID))
-// medium-ийг орхивол sessionId-аас: байвал .phone, үгүй бол .token (CA-ийн хос). .phone + sessionId-гүй,
-// .token + sessionId, эсвэл claimedRole-той prepare + onBehalfOf-гүй → REQUEST_INVALID (CA руу явахгүй).
-// → RP backend нь body-г eID-д ЯГ ХЭВЭЭР бүртгэнэ (POST /pdf/signatures)
+// if medium is omitted it is derived from sessionId: .phone if present, otherwise .token (the CA's pairing). .phone without sessionId,
+// .token with sessionId, or a prepare with claimedRole but no onBehalfOf → REQUEST_INVALID (never sent to the CA).
+// → the RP backend registers the body with eID AS IS (POST /pdf/signatures)
 ```
 
 - `prepare`: preliminary checks (encryption, DocMDP P=1, earlier signatures, ≤ 16); for the first eID signature, with
@@ -97,7 +97,7 @@ Integration documentation: <https://developer.eidmongolia.mn>.
 fixed TSA/OCSP/CRL responses); private keys removed. The source tag is in `golden/SOURCE`.
 
 ```sh
-scripts/sync-pades-golden.sh --check   # vendored = Go репогийн tag
+scripts/sync-pades-golden.sh --check   # vendored = the Go repo's tag
 swift test
 ```
 
