@@ -35,11 +35,11 @@ Xcode：**File → Add Package Dependencies…** → `https://github.com/gerege-
 ```swift
 import GeregeEIDPades
 
-// 1) Сүлжээгүй: PDF-ийг бэлдэж DTBS гаргана
-// verifyPage: true бол fileName заавал (эс бөгөөс REQUEST_INVALID); эхний eID гарын үсгийг CA зөвхөн хуудастай бүртгэнэ
+// 1) 无需网络：准备 PDF 并生成 DTBS
+// verifyPage: true 时必须提供 fileName（否则 REQUEST_INVALID）；CA 仅在带验证页时才登记第一个 eID 签名
 let prepared = try EidPades.prepare(pdf: pdf, options: .init(signerCert: signCertDER, verifyPage: true,
-                                                             fileName: "Гэрээ №1.pdf"))
-// prepared.state-ийг хадгалж болно; prepared.dtbs-ийг (32 байт) утас/токеноор гарын үсэглүүлнэ
+                                                             fileName: "合同1号.pdf"))
+// prepared.state 可以保存；让手机/令牌对 prepared.dtbs（32 字节）签名
 
 // 2) TSA + OCSP/CRL + DSS
 let done = try await EidPades.complete(state: prepared.state, signature: sig)
@@ -47,9 +47,9 @@ let done = try await EidPades.complete(state: prepared.state, signature: sig)
 // done.revIndex, done.sigRevSha256, done.priorCmsSha256, done.priorRevisionSha256, done.signerCert, done.fileName,
 // done.claimedRole
 let body = try JSONEncoder().encode(done.registration(medium: .phone, sessionId: sessionID))
-// medium-ийг орхивол sessionId-аас: байвал .phone, үгүй бол .token (CA-ийн хос). .phone + sessionId-гүй,
-// .token + sessionId, эсвэл claimedRole-той prepare + onBehalfOf-гүй → REQUEST_INVALID (CA руу явахгүй).
-// → RP backend нь body-г eID-д ЯГ ХЭВЭЭР бүртгэнэ (POST /pdf/signatures)
+// 省略 medium 时由 sessionId 推断：有则 .phone，否则 .token（CA 的配对规则）。.phone 但没有 sessionId、
+// .token 但带有 sessionId，或带 claimedRole 的 prepare 却没有 onBehalfOf → REQUEST_INVALID（不会发往 CA）。
+// → RP 后端将 body 原样登记到 eID（POST /pdf/signatures）
 ```
 
 - `prepare`：预检查（加密、DocMDP P=1、先前的签名、≤ 16 个）；对第一个 eID 签名，若
@@ -97,7 +97,7 @@ let body = try JSONEncoder().encode(done.registration(medium: .phone, sessionId:
 固定的 TSA/OCSP/CRL 响应）；私钥已移除。来源 tag 位于 `golden/SOURCE`。
 
 ```sh
-scripts/sync-pades-golden.sh --check   # vendored = Go репогийн tag
+scripts/sync-pades-golden.sh --check   # vendored = Go 仓库的 tag
 swift test
 ```
 
